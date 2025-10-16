@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Phases{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Phases</h1>
+
+  <!-- 🔹 Messages Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-6 space-y-2">
+        {% for category, message in messages %}
+          <div class="px-4 py-3 rounded-lg text-white
+                      {% if category == 'success' %}bg-green-600
+                      {% elif category == 'error' %}bg-red-600
+                      {% elif category == 'warning' %}bg-yellow-500
+                      {% else %}bg-blue-500{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- 🔹 Recherche + bouton ajout -->
+  <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <form method="get" action="{{ url_for('phase.liste_phases') }}" class="flex items-center gap-2">
+      <input type="text" name="q" value="{{ request.args.get('q','') }}"
+             placeholder="🔍 Rechercher une phase..."
+             class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-80 focus:ring-blue-400 focus:border-blue-400">
+      <button type="submit"
+              class="bg-white border border-gray-300 px-3 py-2 rounded text-blue-600 hover:text-blue-800 transition">
+        🔍
+      </button>
+    </form>
+
+    {% if session.user.role != 'user' %}
+    <button onclick="openAddModal()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
+      ➕ Ajouter une phase
+    </button>
+    {% else %}
+    <button disabled class="bg-gray-300 text-gray-600 px-5 py-2.5 rounded-full shadow cursor-not-allowed">
+      🔒 Lecture seule
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- 🔹 Tableau -->
+  <div class="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+    <table class="min-w-full bg-white divide-y divide-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Nom</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for p in phases %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-sm text-gray-800">{{ p.nom }}</td>
+          <td class="px-6 py-4 text-center">
+            {% if session.user.role != 'user' %}
+            <div class="flex items-center justify-center gap-3">
+              <!-- Modifier -->
+              <button type="button"
+                      onclick='openEditModal({{ p.id|tojson }}, {{ p.nom|tojson }})'
+                      class="inline-flex items-center justify-center p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
+                      title="Modifier">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                  <path fill-rule="evenodd" d="M4 16a1 1 0 011-1h9a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+
+              <!-- Supprimer -->
+              <form action="{{ url_for('phase.supprimer_phase', id=p.id) }}" method="post"
+                    onsubmit="return confirm('Supprimer {{ p.nom }} ?')">
+                <button type="submit"
+                        class="inline-flex items-center justify-center p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition"
+                        title="Supprimer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+            {% else %}
+            <span class="text-gray-400 italic text-sm">Lecture seule</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="text-center px-6 py-6 text-gray-500">Aucune phase trouvée</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🔹 Pagination -->
+  <div class="flex justify-center items-center mt-6 gap-6">
+    {% if page > 1 %}
+      <a href="{{ url_for('phase.liste_phases', page=page-1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">⬅️</a>
+    {% endif %}
+    <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
+    {% if page < total_pages %}
+      <a href="{{ url_for('phase.liste_phases', page=page+1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">➡️</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 🔹 MODAL AJOUT -->
+{% if session.user.role != 'user' %}
+<div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter une Phase</h2>
+    <form method="POST" action="{{ url_for('phase.ajouter_phase') }}">
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Nom de la phase</label>
+        <input type="text" name="nom" placeholder="Saisir le nom..." required
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-400 focus:border-blue-400">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- 🔹 MODAL EDIT -->
+{% if session.user.role != 'user' %}
+<div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier la Phase</h2>
+    <form id="editForm" method="POST">
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Nom de la phase</label>
+        <input type="text" id="editNom" name="nom" required
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-400 focus:border-blue-400">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Mettre à jour</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- 🔹 Scripts -->
+<script>
+function openAddModal() {
+  const modal = document.getElementById("addModal");
+  const content = document.getElementById("addModalContent");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    content.classList.remove("scale-95","opacity-0");
+    content.classList.add("scale-100","opacity-100");
+  }, 10);
+}
+
+function closeAddModal() {
+  const modal = document.getElementById("addModal");
+  const content = document.getElementById("addModalContent");
+  content.classList.remove("scale-100","opacity-100");
+  content.classList.add("scale-95","opacity-0");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+}
+
+function openEditModal(id, nom) {
+  document.getElementById("editNom").value = nom || '';
+  document.getElementById("editForm").action = "/phase/modifier/" + id;
+  const modal = document.getElementById("editModal");
+  const content = document.getElementById("editModalContent");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    content.classList.remove("scale-95","opacity-0");
+    content.classList.add("scale-100","opacity-100");
+  }, 10);
+}
+
+function closeEditModal() {
+  const modal = document.getElementById("editModal");
+  const content = document.getElementById("editModalContent");
+  content.classList.remove("scale-100","opacity-100");
+  content.classList.add("scale-95","opacity-0");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+}
+</script>
+{% endblock %}

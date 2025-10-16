@@ -1,0 +1,32 @@
+/* static/css/styles.css */
+body {
+    background-color: #f8f9fa;
+}
+/* Tableau */
+#caf-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#caf-table th, #caf-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+#caf-table th {
+    background-color: #f9fafb;
+    font-weight: bold;
+}
+
+#caf-table tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+#caf-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+#caf-table .text-red-500 {
+    color: red;
+}

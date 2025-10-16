@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Collaborateur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Modifier le collaborateur</h2>
+        <form method="POST">
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Nom</label>
+                <input type="text" name="nom" value="{{ collaborateur.nom }}" class="w-full border px-3 py-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Prénom</label>
+                <input type="text" name="prenom" value="{{ collaborateur.prenom }}" class="w-full border px-3 py-2 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium">Profil</label>
+                <select name="profil_id" class="w-full border px-3 py-2 rounded" required>
+                    {% for profil in profils %}
+                        <option value="{{ profil.id }}" {% if profil.id == collaborateur.profil_id %}selected{% endif %}>{{ profil.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="affectation_id" class="block text-gray-700 font-medium mb-2">Affectation</label>
+<select name="affectation_id" id="affectation_id" required
+        class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    {% for aff in affectations %}
+        <option value="{{ aff.id }}"
+            {% if aff.id == collaborateur.affectation_id %}selected{% endif %}>
+            {{ aff.nom }}
+        </option>
+    {% endfor %}
+</select>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

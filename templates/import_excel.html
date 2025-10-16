@@ -1,0 +1,28 @@
+
+
+
+<div class="max-w-3xl mx-auto px-6 py-10">
+  <h1 class="text-2xl font-bold mb-6 text-blue-600">📤 Importer un fichier Excel</h1>
+
+  <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-2xl shadow-md">
+    <div class="mb-4">
+      <label for="file" class="block text-gray-700 font-medium mb-2">
+        Choisir un fichier Excel (.xls / .xlsx)
+      </label>
+      <input
+        type="file"
+        id="file"
+        name="file"
+        accept=".xls,.xlsx"
+        required
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400"
+      />
+    </div>
+
+    <button
+      type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md">
+      🚀 Importer
+    </button>
+  </form>
+</div>

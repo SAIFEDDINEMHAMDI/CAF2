@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un programme{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Ajouter un programme</h1>
+    <form method="POST">
+        <div class="mb-4">
+            <label class="block text-gray-700">Nom du programme</label>
+            <input type="text" name="nom" class="w-full border rounded px-3 py-2" required>
+        </div>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            ✅ Enregistrer
+        </button>
+        <a href="{{ url_for('programmes.liste_programmes') }}" class="ml-2 text-gray-600 hover:underline">Annuler</a>
+    </form>
+</div>
+{% endblock %}

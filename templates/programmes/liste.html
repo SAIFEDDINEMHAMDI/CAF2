@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Liste des Programmes{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Programmes</h1>
+
+    {% if programmes %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for programme in programmes %}
+                <div class="p-4 bg-white rounded shadow border-l-4 border-indigo-500">
+                    <h3 class="text-lg font-semibold text-gray-800">{{ programme.nom }}</h3>
+                    <div class="mt-3 space-x-2">
+                        <!-- Lien vers les projets du programme -->
+                        <a href="{{ url_for('programmes.gerer_projets', id=programme.id) }}"
+   class="text-indigo-600 hover:text-indigo-800 font-medium">
+    📂 Voir les projets
+</a>
+                        <!-- Lien vers la gestion du programme -->
+                        <a href="{{ url_for('programmes.gerer_programme', id=programme.id) }}"
+                           class="text-sm text-green-600 hover:text-green-800 font-medium">
+                            ⚙️ Gérer
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-10 text-gray-500">
+            Aucun programme disponible.
+        </div>
+    {% endif %}
+
+    <div class="mt-6">
+        <a href="{{ url_for('programmes.ajouter_programme') }}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
+            ➕ Ajouter un programme
+        </a>
+    </div>
+</div>
+{% endblock %}

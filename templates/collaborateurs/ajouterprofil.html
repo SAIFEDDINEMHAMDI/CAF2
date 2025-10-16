@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un Profil Technique{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Ajouter un Profil Technique</h1>
+
+    <form method="POST" class="bg-white shadow rounded-lg p-6 space-y-6">
+        <!-- Nom du profil -->
+        <div>
+            <label for="nom" class="block text-gray-700 font-medium mb-2">Nom du profil</label>
+            <input type="text" name="nom" id="nom" required
+                   value="{{ profil.nom if profil else '' }}"
+                   placeholder="ex: Développeur, Chef projet"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <!-- Ratios BUILD / RUN -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="build_ratio" class="block text-gray-700 font-medium">% Build</label>
+                <input type="number" name="build_ratio" id="build_ratio" min="0" max="100" required
+                       value="{{ profil.build_ratio if profil else 70 }}"
+                       class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="run_ratio" class="block text-gray-700 font-medium">% Run</label>
+                <input type="number" name="run_ratio" id="run_ratio" min="0" max="100" required
+                       value="{{ profil.run_ratio if profil else 30 }}"
+                       class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-gray-700 font-medium">Description (optionnelle)</label>
+            <textarea name="description" id="description" rows="4"
+                      class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ profil.description if profil else '' }}</textarea>
+        </div>
+
+        <!-- Boutons -->
+        <div class="flex justify-end space-x-3 mt-6">
+            <a href="{{ url_for('profils.liste_profils') }}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
+                Annuler
+            </a>
+            <button type="submit" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition">
+                Enregistrer le profil
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

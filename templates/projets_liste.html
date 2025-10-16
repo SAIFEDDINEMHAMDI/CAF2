@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Liste des Projets{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Liste des projets importés</h1>
+
+  <!-- 🔹 Ligne du haut : Recherche + Filtre + Import (aligné à droite) -->
+  <form method="get" action="{{ url_for('projet.liste_projets') }}"
+        class="mb-6 flex flex-wrap items-center justify-between gap-3">
+
+    <!-- 🔍 Recherche + Filtre -->
+    <div class="flex flex-wrap items-center gap-3">
+      <input type="text" name="q" value="{{ search or '' }}"
+             placeholder="Rechercher un projet, domaine, programme..."
+             class="border border-gray-300 rounded-lg px-4 py-2 w-80 focus:ring-blue-400 focus:border-blue-400 text-sm">
+
+      <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+        🔍 Rechercher
+      </button>
+
+      <label class="flex items-center gap-2 text-sm text-gray-700">
+        <input type="checkbox" name="incomplets" value="1"
+               onchange="this.form.submit()"
+               {% if incomplets %}checked{% endif %}>
+        Afficher seulement les incomplets
+      </label>
+    </div>
+
+    <!-- 📤 Bouton Importer Excel (à droite)
+    <button type="button" onclick="openImportModal()"
+            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-full shadow transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Importer Excel
+    </button>-->
+  </form>
+
+  <!-- 🧾 Tableau principal -->
+  <div class="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+    <table class="min-w-full bg-white divide-y divide-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Titre</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Programme</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Domaine</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Catégorie</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Statut</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Score Complexité</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Estimation (JH)</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date MEP</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-200">
+        {% for p in projets %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-sm text-gray-800">{{ p.titre }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ p.programme }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ p.domaine }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ p.categorie }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ p.statut }}</td>
+          <td class="px-6 py-4 text-center text-sm font-semibold text-blue-700">{{ p.score_complexite or 0 }}</td>
+          <td class="px-6 py-4 text-center text-sm font-semibold text-green-700">{{ p.estimation_jh or 0 }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ p.date_mep or '-' }}</td>
+
+          <!-- Actions -->
+          <td class="px-6 py-4 text-center">
+            <div class="flex items-center justify-center gap-3">
+              <!-- Modifier -->
+              <a href="{{ url_for('projet.modifier_projet', projet_id=p.id) }}"
+                 class="inline-flex items-center justify-center p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
+                 title="Modifier">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                  <path fill-rule="evenodd" d="M4 16a1 1 0 011-1h9a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+
+              <!-- Supprimer -->
+              <form method="POST" action="{{ url_for('projet.supprimer_projet', projet_id=p.id) }}"
+                    onsubmit="return confirm('Supprimer le projet {{ p.titre }} ?')">
+                <button type="submit"
+                        class="inline-flex items-center justify-center p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition"
+                        title="Supprimer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10" class="text-center px-6 py-6 text-gray-500 italic">
+            Aucun projet trouvé.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Pagination -->
+
+ <div class="flex justify-center items-center mt-6 gap-6">
+    {% if page > 1 %}
+    <a href="{{ url_for('projet.liste_projets', page=page-1, profil_id=profil_id, search=request.args.get('search','')) }}"
+       class="text-blue-600 hover:text-blue-800 text-lg">
+       ⬅️
+    </a>
+    {% endif %}
+    <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="{{ url_for('projet.liste_projets', page=page+1, profil_id=profil_id, search=request.args.get('search','')) }}"
+       class="text-blue-600 hover:text-blue-800 text-lg">
+       ➡️
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 🌟 Modale centrée -->
+<div id="importModal"
+     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 transition-opacity duration-300 ease-out opacity-0">
+  <div id="importModalContent"
+       class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 transform scale-95 transition-all duration-300 ease-out">
+
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-blue-600">📤 Importer un fichier Excel</h2>
+      <button onclick="closeImportModal()" class="text-gray-500 hover:text-gray-700 text-lg font-bold">×</button>
+    </div>
+
+    <!-- ✅ Formulaire d'import -->
+    <form method="POST" action="/import/" enctype="multipart/form-data">
+      <div class="mb-4">
+        <label for="file" class="block text-gray-700 font-medium mb-2">
+          Choisir un fichier Excel (.xls / .xlsx)
+        </label>
+        <input
+          type="file"
+          id="file"
+          name="file"
+          accept=".xls,.xlsx"
+          required
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400"
+        />
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md">
+          🚀 Importer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('importModal');
+  const content = document.getElementById('importModalContent');
+
+  function openImportModal() {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+      modal.classList.add('opacity-100');
+      modal.classList.remove('opacity-0');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+    }, 20);
+  }
+
+  function closeImportModal() {
+    modal.classList.add('opacity-0');
+    modal.classList.remove('opacity-100');
+    content.classList.add('scale-95');
+    content.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }, 250);
+  }
+</script>
+
+{% endblock %}

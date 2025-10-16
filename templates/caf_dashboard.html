@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}CAF Dashboard - {{ annee }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+  <h1 class="text-3xl font-bold text-blue-600 mb-8">📊 Dashboard CAF - {{ annee }}</h1>
+
+  <!-- 🌐 SECTION : Graphique + Filtres -->
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <!-- ✅ Liste profils -->
+    <div class="md:col-span-1 bg-white p-4 rounded-xl shadow border border-gray-200">
+      <h2 class="text-lg font-semibold mb-3 text-gray-700">Profils</h2>
+      <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+        {% for profil in profils %}
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="profil-checkbox accent-blue-600"
+                   value="{{ profil }}" {% if profil == 'TOTAL' %}checked{% endif %}>
+            <span class="text-sm text-gray-700">{{ '🌐 Tous les profils' if profil == 'TOTAL' else profil }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ✅ Graphique -->
+    <div class="md:col-span-4 bg-white p-4 rounded-xl shadow border border-gray-200">
+      <div id="cafChart" class="h-[550px]"></div>
+    </div>
+  </div>
+
+  <!-- 🌐 Tableau dynamique -->
+  <div class="mt-10 bg-white shadow rounded-xl border border-gray-200 overflow-x-auto">
+    <table id="cafTable" class="min-w-full divide-y divide-gray-200 text-sm">
+      <thead class="bg-blue-50">
+        <tr>
+          <th class="px-6 py-3 text-left font-semibold text-blue-700">Profil</th>
+          <th class="px-6 py-3 text-center font-semibold text-blue-700">CAF Disponible (Total)</th>
+          <th class="px-6 py-3 text-center font-semibold text-blue-700">CAF Requise (Total)</th>
+          <th class="px-6 py-3 text-center font-semibold text-blue-700">Différence</th>
+          <th class="px-6 py-3 text-center font-semibold text-blue-700">% Couverture</th>
+        </tr>
+      </thead>
+      <tbody id="cafTableBody" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+</div>
+<!-- 🧮 TABLEAU MENSUEL
+<div class="mt-12 bg-white shadow rounded-xl border border-gray-200 overflow-x-auto">
+  <h2 class="px-6 py-4 font-semibold text-lg text-gray-700 border-b">📆 Totaux Mensuels par Profil</h2>
+
+  <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold text-gray-700">Profil</th>
+        {% for m in mois_labels %}
+        <th class="px-3 py-3 text-center font-semibold text-gray-700 whitespace-nowrap">{{ m[:3] }}</th>
+        {% endfor %}
+        <th class="px-3 py-3 text-center font-semibold text-gray-700">Total Annuel</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for profil in profils %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium text-gray-800">{{ profil }}</td>
+        {% set total_annee = 0 %}
+        {% for m in mois_labels %}
+          {% set total_annee = total_annee + (caf_dispo_mensuel[profil][m] or 0) %}
+          <td class="px-3 py-3 text-center text-green-700">
+            {{ "%.1f"|format(caf_dispo_mensuel[profil][m]) }}
+          </td>
+        {% endfor %}
+        <td class="px-3 py-3 text-center font-semibold text-gray-800">{{ "%.1f"|format(total_annee) }}</td>
+      </tr>
+      {% endfor %}
+
+      <tr class="bg-gray-100 font-semibold">
+        <td class="px-4 py-3 text-gray-800">TOTAL GÉNÉRAL</td>
+        {% set total_global = 0 %}
+        {% for m in mois_labels %}
+          {% set total_mois = 0 %}
+          {% for profil in profils %}
+            {% set total_mois = total_mois + (caf_dispo_mensuel[profil][m] or 0) %}
+          {% endfor %}
+          <td class="px-3 py-3 text-center text-blue-700">{{ "%.1f"|format(total_mois) }}</td>
+          {% set total_global = total_global + total_mois %}
+        {% endfor %}
+        <td class="px-3 py-3 text-center font-bold text-gray-800">{{ "%.1f"|format(total_global) }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>-->
+<!-- 🧮 TABLEAU GLOBAL HORIZONTAL CAF DISPONIBLE + REQUISE -->
+<div class="mt-12 bg-white shadow rounded-xl border border-gray-200 overflow-x-auto">
+  <h2 class="px-6 py-4 font-semibold text-lg text-gray-700 border-b">
+    🗓️ CAF Totale (Disponible / Requise) par Mois et par Semaine
+  </h2>
+
+  <table class="min-w-full text-xs border-collapse">
+    <thead>
+      <!-- Ligne 1 : Mois -->
+      <tr class="bg-gray-100 text-gray-700 uppercase">
+        <th rowspan="2" class="px-4 py-3 text-left font-semibold">Mois</th>
+        {% for mois, semaines in mois_to_semaines.items() %}
+          <th colspan="{{ semaines|length }}" class="py-2 border-x border-gray-200 font-semibold text-center">
+            {{ mois }}
+          </th>
+        {% endfor %}
+      </tr>
+
+      <!-- Ligne 2 : Semaines -->
+      <tr class="bg-gray-50 text-gray-600">
+        {% for mois, semaines in mois_to_semaines.items() %}
+          {% for s in semaines %}
+            <th class="px-2 py-1 border border-gray-100">{{ s }}</th>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+    </thead>
+
+    <tbody>
+      <!-- Ligne : Total CAF disponible -->
+      <tr class="bg-green-50 font-semibold">
+        <td class="px-4 py-2 text-left text-green-800">CAF Disponible (Total)</td>
+        {% for mois, semaines in mois_to_semaines.items() %}
+          {% for s in semaines %}
+            {% set total_s = 0 %}
+            {% for profil in profils %}
+              {% if mois in caf_dispo_par_semaine[profil] and s in caf_dispo_par_semaine[profil][mois] %}
+                {% set total_s = total_s + caf_dispo_par_semaine[profil][mois][s] %}
+              {% endif %}
+            {% endfor %}
+            <td class="px-2 py-1 text-center text-green-700">{{ "%.1f"|format(total_s) }}</td>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+
+      <!-- Ligne : Total CAF requise -->
+      <tr class="bg-red-50 font-semibold">
+        <td class="px-4 py-2 text-left text-red-800">CAF Requise (Total)</td>
+        {% for mois, semaines in mois_to_semaines.items() %}
+          {% for s in semaines %}
+            {% set total_s = 0 %}
+            {% for profil in profils %}
+              {% if mois in caf_requise_par_semaine[profil] and s in caf_requise_par_semaine[profil][mois] %}
+                {% set total_s = total_s + caf_requise_par_semaine[profil][mois][s] %}
+              {% endif %}
+            {% endfor %}
+            <td class="px-2 py-1 text-center text-red-600">{{ "%.1f"|format(total_s) }}</td>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+
+      <!-- Ligne : Différence (Disponible - Requise) -->
+      <tr class="bg-gray-100 font-semibold">
+        <td class="px-4 py-2 text-left text-gray-800">Différence</td>
+        {% for mois, semaines in mois_to_semaines.items() %}
+          {% for s in semaines %}
+            {% set total_dispo = 0 %}
+            {% set total_requise = 0 %}
+            {% for profil in profils %}
+              {% if mois in caf_dispo_par_semaine[profil] and s in caf_dispo_par_semaine[profil][mois] %}
+                {% set total_dispo = total_dispo + caf_dispo_par_semaine[profil][mois][s] %}
+              {% endif %}
+              {% if mois in caf_requise_par_semaine[profil] and s in caf_requise_par_semaine[profil][mois] %}
+                {% set total_requise = total_requise + caf_requise_par_semaine[profil][mois][s] %}
+              {% endif %}
+            {% endfor %}
+            {% set diff = total_dispo - total_requise %}
+            <td class="px-2 py-1 text-center {% if diff < 0 %}text-red-700{% else %}text-green-700{% endif %}">
+              {{ "%.1f"|format(diff) }}
+            </td>
+          {% endfor %}
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ✅ PLOTLY -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+const semaines = {{ week_labels|tojson }};
+const dataDispo = {{ caf_dispo|tojson }};
+const dataRequise = {{ caf_requise|tojson }};
+const checkboxes = document.querySelectorAll('.profil-checkbox');
+const chartDiv = document.getElementById('cafChart');
+const tableBody = document.getElementById('cafTableBody');
+
+// ==============================
+// 📈 1️⃣ — FONCTION CHART
+// ==============================
+function getTraces(selectedProfiles) {
+  const traces = [];
+
+  if (selectedProfiles.length === 0 || selectedProfiles.includes("TOTAL")) {
+    traces.push({
+      x: semaines, y: dataDispo["TOTAL"],
+      name: "CAF Disponible (Totale)",
+      mode: "lines",
+      line: {color: "green", width: 3}
+    });
+    traces.push({
+      x: semaines, y: dataRequise["TOTAL"],
+      name: "CAF Requise (Totale)",
+      mode: "lines",
+      fill: "tozeroy",
+      line: {color: "crimson", width: 3},
+      fillcolor: "rgba(220, 20, 60, 0.25)"
+    });
+  } else {
+    selectedProfiles.forEach(p => {
+      traces.push({
+        x: semaines, y: dataDispo[p],
+        name: `${p} - Disponible`,
+        mode: "lines",
+        line: {color: "green", dash: "dot", width: 2}
+      });
+      traces.push({
+        x: semaines, y: dataRequise[p],
+        name: `${p} - Requise`,
+        mode: "lines",
+        line: {color: "crimson", width: 2}
+      });
+    });
+  }
+  return traces;
+}
+
+// ==============================
+// 📊 2️⃣ — FONCTION TABLEAU
+// ==============================
+function updateTable(selectedProfiles) {
+  tableBody.innerHTML = "";
+
+  // Cas 1️⃣ : Vue globale
+  if (selectedProfiles.length === 0 || selectedProfiles.includes("TOTAL")) {
+    const totalDispo = sum(dataDispo["TOTAL"]);
+    const totalRequise = sum(dataRequise["TOTAL"]);
+    const delta = totalDispo - totalRequise;
+    const ratio = (totalRequise / totalDispo * 100).toFixed(1);
+
+    tableBody.innerHTML = `
+      <tr class="bg-blue-50 font-semibold">
+        <td class="px-6 py-3 text-blue-700">🌐 Total</td>
+        <td class="px-6 py-3 text-center text-green-700">${fmt(totalDispo)}</td>
+        <td class="px-6 py-3 text-center text-red-600">${fmt(totalRequise)}</td>
+        <td class="px-6 py-3 text-center ${delta < 0 ? 'text-green-600' : 'text-red-600'}">${fmt(delta)}</td>
+        <td class="px-6 py-3 text-center text-blue-700">${ratio}%</td>
+      </tr>`;
+    return;
+  }
+
+  // Cas 2️⃣ : profils spécifiques
+  selectedProfiles.forEach(p => {
+    const dispo = sum(dataDispo[p]);
+    const requise = sum(dataRequise[p]);
+    const delta = dispo - requise;
+    const ratio = dispo ? (requise / dispo * 100).toFixed(1) : "—";
+
+    const row = document.createElement("tr");
+    row.className = "hover:bg-gray-50";
+    row.innerHTML = `
+      <td class="px-6 py-3 font-medium text-gray-800">${p}</td>
+      <td class="px-6 py-3 text-center text-green-700 font-semibold">${fmt(dispo)}</td>
+      <td class="px-6 py-3 text-center text-red-600 font-semibold">${fmt(requise)}</td>
+      <td class="px-6 py-3 text-center ${delta < 0 ? 'text-red-600' : 'text-green-600'} font-semibold">${fmt(delta)}</td>
+      <td class="px-6 py-3 text-center text-gray-700">${ratio}%</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+// ==============================
+// ⚙️ 3️⃣ — UTILS
+// ==============================
+function sum(arr) { return arr.reduce((a, b) => a + b, 0); }
+function fmt(n) { return (Math.round(n * 10) / 10).toLocaleString("fr-FR"); }
+
+// ==============================
+// 🚀 4️⃣ — UPDATE GLOBAL
+// ==============================
+function updateDashboard() {
+  const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+  const traces = getTraces(selected);
+  Plotly.newPlot(chartDiv, traces, {
+    title: "CAF Disponible vs CAF Requise",
+    xaxis: {title: "Semaines"},
+    yaxis: {title: "Jours-Hommes (JH)"},
+    legend: {orientation: "h"},
+    margin: {t: 40, l: 50, r: 20, b: 40}
+  }, {responsive: true});
+  updateTable(selected);
+}
+
+// Initialisation
+checkboxes.forEach(cb => cb.addEventListener('change', updateDashboard));
+updateDashboard();
+</script>
+{% endblock %}

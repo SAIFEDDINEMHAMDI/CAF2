@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}CAF par Profil et Jour{% endblock %}
+
+{% block content %}
+<div class="max-w-full mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">CAF Disponible par Profil et Jour</h1>
+
+    <div class="overflow-x-auto shadow rounded-lg border">
+        <table class="min-w-full bg-white divide-y divide-gray-200">
+            <thead class="bg-gray-100 sticky top-0 z-10">
+                <tr>
+                    <th class="px-4 py-2 text-left font-medium text-gray-700">Profil</th>
+                    {% for mois in headers %}
+                        {% set index = loop.index %}
+                        {% set nb_jours = calendar.monthrange(datetime.now().year, index)[1] %}
+                        {% for jour in range(1, nb_jours + 1) %}
+                            <th class="px-4 py-2 text-center font-medium text-gray-700">{{ jour }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 text-left font-medium text-gray-700"></th>
+                    {% for mois in headers %}
+                        {% set index = loop.index %}
+                        {% set nb_jours = calendar.monthrange(datetime.now().year, index)[1] %}
+                        {% for jour in range(1, nb_jours + 1) %}
+                            <th class="px-4 py-2 text-center font-medium text-gray-700">{{ mois }}</th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for row in data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 font-medium">{{ row.profil }}</td>
+                        {% for mois in headers %}
+                            {% set index = loop.index %}
+                            {% set nb_jours = calendar.monthrange(datetime.now().year, index)[1] %}
+                            {% for jour in range(1, nb_jours + 1) %}
+                                <td class="px-4 py-2 text-center">{{ row[mois ~ '_' ~ jour] }} JH</td>
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

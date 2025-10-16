@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}CAF Disponible (Calcul Automatique){% endblock %}
+
+{% block content %}
+<div class="max-w-full mx-auto px-6 py-8">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <h1 class="text-3xl font-bold text-blue-600 flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+           d="M4 6h16M4 12h16M4 18h16"/></svg>
+      CAF Disponible
+    </h1>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Plein écran -->
+      <button id="fullscreen-btn"
+              class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full shadow-md flex items-center gap-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M4 8V4h4M4 4l6 6m10 6v4h-4m4 0l-6-6"/></svg>
+        Plein écran
+      </button>
+
+      <!-- Export Excel -->
+      <a href="{{ url_for('caf.export_excel', mois=mois_filtre) }}"
+         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-md flex items-center gap-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Exporter Excel
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtre -->
+  <div class="flex justify-start mb-6">
+    <form method="GET" class="flex items-center gap-2">
+      <label for="mois" class="font-medium text-gray-700">Filtrer par mois :</label>
+      <select name="mois" id="mois"
+              class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-blue-400 focus:border-blue-400"
+              onchange="this.form.submit()">
+        <option value="all" {% if mois_filtre == 'all' %}selected{% endif %}>Tous les mois</option>
+        {% for m in mois_labels %}
+          <option value="{{ m }}" {% if mois_filtre == m %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <!-- Tableau -->
+  <div id="caf-container" class="overflow-x-auto overflow-y-hidden shadow-lg rounded-lg border border-gray-200">
+    <table id="caf-table" class="min-w-full bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+      <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">Profil</th>
+          {% for s in semaines_affichees %}
+            <th class="px-3 py-3 text-center font-semibold whitespace-nowrap">{{ s }}</th>
+          {% endfor %}
+        </tr>
+        <tr class="bg-gray-50 text-[11px] text-gray-500">
+          <th class="px-4 py-2 text-left font-medium"></th>
+          {% for s in semaines_affichees %}
+            <th class="px-3 py-2 text-center font-medium whitespace-nowrap">{{ semaine_to_mois[s] }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for row in data %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-4 py-3 font-medium text-gray-800">
+            {{ row.profil }} <span class="text-gray-500 text-xs">({{ row.nb_collab }} pers.)</span>
+          </td>
+          {% for s in semaines_affichees %}
+          <td class="px-3 py-3 text-center text-gray-700 whitespace-nowrap">{{ row[s] }} JH</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Plein écran -->
+<script>
+  const container = document.getElementById("caf-container");
+  const btn = document.getElementById("fullscreen-btn");
+  btn.addEventListener("click", () => {
+    if (!document.fullscreenElement) {
+      container.requestFullscreen();
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18v2h4M6 20l6-6m6-8V4h-4m4 0l-6 6"/></svg> Quitter plein écran';
+    } else {
+      document.exitFullscreen();
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4h4M4 4l6 6m10 6v4h-4m4 0l-6-6"/></svg> Plein écran';
+    }
+  });
+</script>
+{% endblock %}

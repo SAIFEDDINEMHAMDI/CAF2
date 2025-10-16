@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Affectation des Collaborateurs – {{ projet.titre_projet }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-6 text-blue-600">Affectation des Collaborateurs – {{ projet.titre_projet }}</h1>
+
+  <p class="text-gray-600 mb-6">
+    Programme : {{ projet.programme_nom or '-' }}
+  </p>
+
+  <!-- 🔹 Bouton pour ouvrir le pop-up -->
+  <div class="flex justify-end mb-4">
+    <button onclick="openAddModal()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">
+      ➕ Ajouter un collaborateur
+    </button>
+  </div>
+
+  <!-- 🔹 Tableau des collaborateurs -->
+  <div class="bg-white shadow overflow-hidden rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200" id="table-collaborateurs">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left">Collaborateur</th>
+          <th class="px-6 py-3 text-left">Rôle</th>
+          <th class="px-6 py-3 text-center">% Allocation</th>
+          <th class="px-6 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for a in affectations %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4">{{ a.collaborateur }}</td>
+          <td class="px-6 py-4">{{ a.role or '-' }}</td>
+          <td class="px-6 py-4 text-center">{{ a.pourcentage_allocation }}%</td>
+          <td class="px-6 py-4 text-center">
+            <form method="POST" action="{{ url_for('projet.supprimer_affectation', affectation_id=a.id, projet_id=projet.id) }}" style="display:inline">
+              <button type="submit" class="text-red-600 hover:text-red-800">🗑️</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-gray-500 py-4 italic">Aucun collaborateur affecté.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🔹 Boutons bas de page -->
+  <div class="mt-6 flex justify-end space-x-2">
+    <a href="{{ url_for('projet.modifier_projet', projet_id=projet.id) }}"
+       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+      ← Retour
+    </a>
+  </div>
+</div>
+
+<!-- 🔹 Modal d’ajout -->
+<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <h2 class="text-xl font-semibold text-blue-600 mb-4">Ajouter un collaborateur</h2>
+
+    <form id="addCollabForm">
+      <div class="mb-4">
+        <label class="block font-medium text-gray-700 mb-1">Collaborateur</label>
+        <select name="collaborateur" required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="">-- Sélectionner --</option>
+          {% for c in collaborateurs %}
+            <option value="{{ c.matricule }}">{{ c.nom_complet }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium text-gray-700 mb-1">Rôle</label>
+        <input type="text" name="role" placeholder="Ex: Développeur"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2">
+      </div>
+
+      <div class="mb-6">
+        <label class="block font-medium text-gray-700 mb-1">% Allocation</label>
+        <input type="number" name="pourcentage" min="0" max="100" placeholder="Ex: 50"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2">
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeAddModal()"
+                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Annuler</button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAddModal() {
+  document.getElementById('addModal').classList.remove('hidden');
+}
+function closeAddModal() {
+  document.getElementById('addModal').classList.add('hidden');
+}
+
+// 🔹 Soumission du formulaire (AJAX)
+document.getElementById('addCollabForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const data = new FormData(form);
+  const projetId = {{ projet.id }};
+
+  const response = await fetch(`/projet/${projetId}/affectations/ajouter`, {
+    method: 'POST',
+    body: data
+  });
+  const result = await response.json();
+
+  if (result.success) {
+    const tbody = document.querySelector('#table-collaborateurs tbody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="px-6 py-4">${result.collaborateur.collaborateur}</td>
+      <td class="px-6 py-4">${result.collaborateur.role}</td>
+      <td class="px-6 py-4 text-center">${result.collaborateur.pourcentage_allocation}%</td>
+      <td class="px-6 py-4 text-center text-gray-500 italic">Nouveau</td>
+    `;
+    tbody.prepend(row);
+    closeAddModal();
+    form.reset();
+  } else {
+    alert(result.message);
+  }
+});
+</script>
+{% endblock %}

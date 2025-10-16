@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Gérer les Phases – {{ projet.titre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Gérer les Phases – {{ projet.titre }}</h1>
+<p class="text-gray-600 mb-6">Programme : {{ programme_nom }}</p>
+    <form method="POST">
+        <div class="bg-white shadow overflow-hidden rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Phase</th>
+                        <th class="px-6 py-3 text-left">Début</th>
+                        <th class="px-6 py-3 text-left">Fin</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for phase in phases %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <label>
+                                    <input type="checkbox" name="phase_id" value="{{ phase.id }}"
+                                           {% if phase.id in projet_phases|map(attribute='phase_id')|list %}checked{% endif %}>
+                                    {{ phase.nom }}
+                                </label>
+                            </td>
+                            <td class="px-6 py-4">
+                                <input type="date" name="date_debut" required
+                                       value="{% for p in projet_phases %}{% if p.phase_id == phase.id %}{{ p.date_debut }}{% endif %}{% endfor %}"
+                                       class="border rounded px-2 py-1 w-full">
+                            </td>
+                            <td class="px-6 py-4">
+                                <input type="date" name="date_fin" required
+                                       value="{% for p in projet_phases %}{% if p.phase_id == phase.id %}{{ p.date_fin }}{% endif %}{% endfor %}"
+                                       class="border rounded px-2 py-1 w-full">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-2">
+            <a href="{{ url_for('priorites') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+                ← Retour
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                ✅ Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

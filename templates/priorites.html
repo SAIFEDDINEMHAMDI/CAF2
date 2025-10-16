@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Priorités des Projets{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <h1 class="text-3xl font-bold mb-6 text-blue-600">Priorités des Projets</h1>
+
+  <!-- Filtres -->
+  <div class="flex flex-wrap items-center justify-between mb-6">
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('priorites') }}"
+         class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition">
+        Tous les projets
+      </a>
+      <a href="{{ url_for('priorites', retenu=1) }}"
+         class="px-4 py-2 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition">
+        Projets retenus
+      </a>
+    </div>
+    <form method="get" class="flex items-center gap-2">
+      <input type="text" name="q" placeholder="Rechercher..."
+             class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:ring-blue-400 focus:border-blue-400">
+      <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">🔍</button>
+    </form>
+  </div>
+
+  <!-- Tableau -->
+  <div class="overflow-x-auto bg-white shadow rounded-lg">
+    <table class="min-w-full border border-gray-200">
+      <thead class="bg-blue-50 text-blue-700 uppercase text-sm">
+        <tr>
+          <th class="py-3 px-4 text-left border-b">Titre</th>
+          <th class="py-3 px-4 text-left border-b">Catégorie</th>
+          <th class="py-3 px-4 text-center border-b">Score WSJF</th>
+          <th class="py-3 px-4 text-center border-b">Complexité</th>
+          <th class="py-3 px-4 text-center border-b">Retenu</th>
+          <th class="py-3 px-4 text-center border-b">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-700">
+        {% for projet in projets %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="py-3 px-4 border-b">{{ projet.titre }}</td>
+          <td class="py-3 px-4 border-b">{{ projet.categorie or '-' }}</td>
+          <td class="py-3 px-4 border-b text-center font-semibold text-blue-700">{{ projet.score_wsjf or 0 }}</td>
+          <td class="py-3 px-4 border-b text-center">{{ projet.complexite or 0 }}</td>
+
+          <!-- ✅ Bouton Retenu -->
+          <td class="py-3 px-4 border-b text-center">
+            {% if session.user.role != 'user' %}
+              <form action="{{ url_for('toggle_retenu', projet_id=projet.id) }}" method="POST">
+                <button type="submit"
+                        class="px-3 py-1 rounded-full {{ 'bg-green-100 text-green-700' if projet.retenu else 'bg-gray-100 text-gray-500' }} hover:opacity-80 transition">
+                  {{ '✅ Oui' if projet.retenu else '❌ Non' }}
+                </button>
+              </form>
+            {% else %}
+              <span class="px-3 py-1 rounded-full {{ 'bg-green-50 text-green-700' if projet.retenu else 'bg-gray-100 text-gray-500' }}">
+                {{ '✅ Oui' if projet.retenu else '❌ Non' }}
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- ✅ Bloc Actions -->
+          <td class="py-3 px-4 border-b text-center">
+            <div class="flex justify-center gap-3">
+              {% if session.user.role != 'user' %}
+                <!-- Modifier -->
+                <a href="{{ url_for('projet.modifier_projet', projet_id=projet.id) }}"
+                   class="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600"
+                   title="Modifier">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5h2m-1 0v14m-7-7h14" />
+                  </svg>
+                </a>
+
+                <!-- Supprimer -->
+                <form action="{{ url_for('projet.supprimer_projet', projet_id=projet.id) }}" method="POST"
+                      onsubmit="return confirm('Supprimer le projet {{ projet.titre }} ?');">
+                  <button type="submit"
+                          class="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
+                          title="Supprimer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </form>
+              {% else %}
+                <!-- 🔒 Icône grisée pour les users -->
+                <span class="text-gray-400 italic text-sm"></span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-gray-500 italic">
+            Aucun projet trouvé.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

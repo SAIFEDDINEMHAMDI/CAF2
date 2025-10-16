@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Modifier Projet - WSJF & Charge{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Modifier le Projet</h1>
+
+    <form method="POST" action="{{ url_for('modifier_priorite', id=projet.id) }}" class="bg-white shadow rounded-lg p-6 space-y-6">
+
+        <!-- Informations générales -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Titre</label>
+            <input type="text" name="titre" value="{{ projet.titre }}" required
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Description</label>
+            <textarea name="description" rows="4" required
+                      class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ projet.description }}</textarea>
+        </div>
+
+        <!-- Champs du numérateur (Valeur métier) -->
+        {% set numerateur_fields = [
+            ('alignement_strategic', 'Alignement stratégique', ['fortement_aligne', 'aligne', 'partiellement_aligne', 'non_aligne']),
+            ('impact_pnb', 'Impact PNB', ['gt_5m', 'between_1m_5m', 'between_500k_1m', 'lt_500k']),
+            ('impact_satisfaction', 'Impact satisfaction client', ['impact_tres_eleve', 'impact_eleve', 'impact_modere', 'impact_limite']),
+            ('conquerir_client', 'Conquête client', ['gt_10p', 'between_5_10p', 'proche_0', 'negatif']),
+            ('maitrise_couts', 'Maîtrise des coûts', ['gt_5m', 'between_1m_5m', 'between_500k_1m', 'lt_500k']),
+            ('attenuation_menaces', 'Atténuation des menaces', ['tres_eleve', 'elevee', 'acceptable', 'limitee']),
+            ('creation_opportunites', 'Création d’opportunités', ['exceptionnelle', 'pertinentes', 'modestes', 'impact_limite']),
+            ('conditions_techniques', 'Conditions techniques', ['diversifiee_robustes', 'pertinentes', 'modestes', 'impact_limite']),
+            ('deadline_reglementaire', 'Deadline réglementaire', ['criticite_extreme_imm', 'criticite_elevee_rapp', 'criticite_moderee_ger', 'criticite_faible_ger']),
+            ('pression_concurrence', 'Pression concurrentielle', ['criticite_extreme', 'criticite_elevee', 'modecriticite_moderee', 'criticite_faible']),
+            ('echeances_strategiques', 'Échéances stratégiques', ['criticite_extreme', 'criticite_elevee', 'criticite_moderee', 'criticite_faible']),
+            ('dependances_projets', 'Dépendances projets', ['essentielle', 'significative', 'moderee', 'aucune']),
+            ('urgence_obsolescence', 'Urgence obsolescence', ['immediate', 'court_terme', 'moyen_terme', 'long_terme'])
+        ] %}
+
+        {% for champ, label, options in numerateur_fields %}
+            <div class="tooltip">
+                <label class="block text-gray-700 font-medium mb-2">{{ label }}</label>
+                <select name="{{ champ }}"
+                        class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">-- Sélectionner --</option>
+                    {% for opt in options %}
+                        <option value="{{ opt }}" {% if projet[champ] == opt %}selected{% endif %}>
+                            {{ opt }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endfor %}
+
+        <!-- Champs du dénominateur (Complexité / Coût d'implémentation) -->
+        {% set denominateur_fields = [
+            ('q1', 'Q1. Étendue du périmètre', ['petit', 'moyen', 'large', 'tres_large']),
+            ('q2', 'Q2. Nombre d\'applications', 'number'),
+            ('q3', 'Q3. Interfaces externes', ['0', '1', '2', '3', '4-5']),
+            ('q4', 'Q4. Domaines impactés', ['1', '2_3', '4', '5', '6', '7', '8', '9', 'plus_9']),
+            ('q5', 'Q5. Client externe impacté', ['non', 'tres_faible', 'faible', 'moyen', 'fort']),
+            ('q6', 'Q6. Volume d\'utilisateurs', ['1_5', '6_10', '11_20', '21_50', '51_100', '101_200', '201_500', '501_1000', 'plus_1000']),
+            ('q7', 'Q7. Technologies non maîtrisées', ['inexistant', 'faible', 'moyenne', 'elevee', 'tres_elevee']),
+            ('q8', 'Q8. Dépendance externe', ['inexistant', 'faible', 'moyenne', 'elevee', 'tres_elevee']),
+            ('q9', 'Q9. Degré d\'incertitude', ['tres_faible', 'faible', 'moyen', 'eleve', 'tres_eleve']),
+            ('q10', 'Q10. Type de solution', ['evolution_systeme', 'integration_partenaire', 'creation_nouveau'])
+        ] %}
+
+        {% for champ, label, options in denominateur_fields %}
+            <div class="tooltip">
+                <label class="block text-gray-700 font-medium mb-2">{{ label }}</label>
+                {% if options == 'number' %}
+                    <input type="number" name="{{ champ }}" value="{{ projet[champ] }}" min="0"
+                           class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                {% else %}
+                    <select name="{{ champ }}"
+                            class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- Sélectionner --</option>
+                        {% for opt in options %}
+                            <option value="{{ opt }}" {% if projet[champ] == opt %}selected{% endif %}>
+                                {{ opt }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <!-- Catégorie -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Catégorie</label>
+            <select name="categorie_id" class="w-full border border-gray-300 rounded px-4 py-2">
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if projet.categorie_id == cat.id %}selected{% endif %}>
+                        {{ cat.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+<div class="mb-4">
+    <label class="block text-gray-700 mb-2">Programme</label>
+    <select name="programme_id" class="w-full border rounded px-3 py-2">
+        <option value="">Aucun programme</option>
+        {% for prog in programmes %}
+            <option value="{{ prog.id }}" {% if projet.programme_id == prog.id %}selected{% endif %}>
+                {{ prog.nom }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+        <!-- Statut -->
+        <div>
+            <label class="block text-gray-700 font-medium mb-2">Statut</label>
+            <select name="statut" class="w-full border border-gray-300 rounded px-4 py-2">
+                <option value="En attente" {% if projet.statut == 'En attente' %}selected{% endif %}>En attente</option>
+                <option value="À planifier" {% if projet.statut == 'À planifier' %}selected{% endif %}>À planifier</option>
+                <option value="En cours" {% if projet.statut == 'En cours' %}selected{% endif %}>En cours</option>
+                <option value="Terminé" {% if projet.statut == 'Terminé' %}selected{% endif %}>Terminé</option>
+            </select>
+        </div>
+
+        <!-- Bouton soumettre -->
+        <div class="flex justify-between mt-6">
+            <a href="{{ url_for('priorites') }}" class="text-gray-600 hover:text-gray-800 underline">← Retour</a>
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded transition duration-300">
+                Recalculer et Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Tooltip -->
+<style>
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 220px;
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -110px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+</style>
+
+<!-- Script pour afficher le score recalculé en temps réel (optionnel) -->
+<script>
+    // Optionnel : recalcul côté client (tu peux aussi l’enlever si tu préfères recalculer côté serveur)
+</script>
+{% endblock %}

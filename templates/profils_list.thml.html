@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Gestion des Profils</h2>
+
+    <!-- Bouton Ajouter -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#ajoutProfilModal">
+        + Ajouter un profil
+    </button>
+
+    <!-- Tableau -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Build Ratio</th>
+                    <th>Run Ratio</th>
+                    <th>Heures Base</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in profils %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.nom }}</td>
+                    <td>{{ p.description }}</td>
+                    <td>{{ p.build_ratio }}%</td>
+                    <td>{{ p.run_ratio }}%</td>
+                    <td>{{ p.heures_base }}</td>
+                    <td>
+                        <!-- Bouton Modifier -->
+                        <button class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#editProfilModal{{p.id}}">
+                            ✏️
+                        </button>
+                        <!-- Bouton Supprimer -->
+                        <form method="POST" action="{{ url_for('profils.supprimer_profil', id=p.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">❌</button>
+                        </form>
+                    </td>
+                </tr>
+
+                <!-- Modal Modifier -->
+                <div class="modal fade" id="editProfilModal{{p.id}}" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('profils.modifier_profil', id=p.id) }}">
+                        <div class="modal-header bg-primary text-white">
+                          <h5 class="modal-title">Modifier Profil</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <input type="text" name="nom" value="{{ p.nom }}" class="form-control mb-2" required>
+                          <textarea name="description" class="form-control mb-2">{{ p.description }}</textarea>
+                          <input type="number" name="build_ratio" value="{{ p.build_ratio }}" class="form-control mb-2">
+                          <input type="number" name="run_ratio" value="{{ p.run_ratio }}" class="form-control mb-2">
+                          <input type="number" name="heures_base" value="{{ p.heures_base }}" class="form-control mb-2">
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                          <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Ajouter -->
+<div class="modal fade" id="ajoutProfilModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('profils.ajouter_profil') }}">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Ajouter un Profil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" name="nom" placeholder="Nom" class="form-control mb-2" required>
+          <textarea name="description" placeholder="Description" class="form-control mb-2"></textarea>
+          <input type="number" name="build_ratio" placeholder="Build ratio" class="form-control mb-2" value="70">
+          <input type="number" name="run_ratio" placeholder="Run ratio" class="form-control mb-2" value="30">
+          <input type="number" name="heures_base" placeholder="Heures base" class="form-control mb-2" value="35">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

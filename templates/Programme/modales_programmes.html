@@ -1,0 +1,302 @@
+<!-- ============================================================= -->
+<!-- 🔹 MODALE PHASES -->
+<!-- ============================================================= -->
+<div id="phasesModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">⚙️ Phases du programme : <span id="programmeNom"></span></h2>
+
+    <!-- ✅ Message d'erreur stylé -->
+    <div id="errorMsgPhase" class="hidden mb-4 border border-red-400 bg-red-50 text-red-700 rounded-lg px-4 py-3 text-sm font-medium shadow-inner"></div>
+
+    <button id="toggleAddFormBtn" onclick="toggleAddForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-4">➕ Ajouter une phase</button>
+
+    <form id="phaseAddForm" class="hidden flex gap-2 mb-4" method="POST">
+      <input type="hidden" name="programme_id" id="programmeId">
+      <select name="phase_id" id="phaseSelect" class="border rounded px-3 py-2 flex-1"></select>
+      <input name="poids" id="poidsInput" type="number" step="0.1" value="1" class="border rounded px-3 py-2 w-28 text-center">
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Enregistrer</button>
+    </form>
+
+    <div id="phasesList" class="overflow-y-auto max-h-80 space-y-2 border rounded-lg p-3 bg-gray-50 shadow-inner"></div>
+
+    <div class="mt-4 text-right">
+      <button onclick="closePhasesModal()" class="bg-gray-300 px-4 py-2 rounded">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- 🔹 MODALE PROFILS -->
+<!-- ============================================================= -->
+<div id="profilsModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6">
+    <h2 class="text-xl font-bold mb-4 text-green-700">👥 Profils du programme : <span id="programmeNomProfil"></span></h2>
+
+    <div id="errorMsgProfil" class="hidden mb-4 border border-red-400 bg-red-50 text-red-700 rounded-lg px-4 py-3 text-sm font-medium shadow-inner"></div>
+
+    <button id="toggleAddProfilBtn" onclick="toggleAddProfilForm()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-4">➕ Ajouter un profil</button>
+
+    <form id="profilAddForm" class="hidden flex gap-2 mb-4" method="POST">
+      <input type="hidden" name="programme_id" id="programmeIdProfil">
+      <select name="profil_id" id="profilSelect" class="border rounded px-3 py-2 flex-1"></select>
+      <input name="poids" id="profilPoidsInput" type="number" step="0.1" value="1" class="border rounded px-3 py-2 w-28 text-center">
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Enregistrer</button>
+    </form>
+
+    <div id="profilsList" class="overflow-y-auto max-h-80 space-y-2 border rounded-lg p-3 bg-gray-50 shadow-inner"></div>
+
+    <div class="mt-4 text-right">
+      <button onclick="closeProfilsModal()" class="bg-gray-300 px-4 py-2 rounded">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- 🔹 MODALE PROJETS -->
+<!-- ============================================================= -->
+<!--<div id="projetsModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl p-6">
+    <h2 class="text-xl font-bold mb-4 text-purple-700">📁 Projets du programme : <span id="programmeNomProjet"></span></h2>
+    <div id="errorMsgProjet" class="hidden mb-4 border border-red-400 bg-red-50 text-red-700 rounded-lg px-4 py-3 text-sm font-medium shadow-inner"></div>
+
+    <button id="toggleAddProjetBtn" onclick="toggleAddProjetForm()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-4">➕ Ajouter un projet</button>
+
+    <form id="projetAddForm" class="hidden flex gap-2 mb-4" method="POST">
+      <input type="hidden" name="programme_id" id="programmeIdProjet">
+      <select name="projet_id" id="projetSelect" class="border rounded px-3 py-2 flex-1"></select>
+      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Enregistrer</button>
+    </form>
+
+    <div id="projetsList" class="overflow-y-auto max-h-80 space-y-2 border rounded-lg p-3 bg-gray-50 shadow-inner"></div>
+
+    <div class="mt-4 text-right">
+      <button onclick="closeProjetsModal()" class="bg-gray-300 px-4 py-2 rounded">Fermer</button>
+    </div>
+  </div>
+</div>-->
+
+<!-- ============================================================= -->
+<!-- 🔹 SCRIPT UNIQUE POUR TOUTES LES MODALES -->
+<!-- ============================================================= -->
+<script>
+// =====================================================
+// 🔸 PHASES
+// =====================================================
+function openPhasesModal(id, nom) {
+  document.getElementById('programmeId').value = id;
+  document.getElementById('programmeNom').textContent = nom;
+  document.getElementById('phasesModal').classList.remove('hidden');
+  document.getElementById('phaseAddForm').classList.add('hidden');
+  document.getElementById('errorMsgPhase').classList.add('hidden');
+  loadAvailablePhases(id);
+  loadPhases(id);
+}
+function closePhasesModal() {
+  document.getElementById('phasesModal').classList.add('hidden');
+}
+function toggleAddForm() {
+  const f = document.getElementById('phaseAddForm');
+  const b = document.getElementById('toggleAddFormBtn');
+  f.classList.toggle('hidden');
+  b.textContent = f.classList.contains('hidden') ? '➕ Ajouter une phase' : '⬆️ Masquer le formulaire';
+}
+async function loadAvailablePhases(id) {
+  const res = await fetch(`/programme_config/get_available_phases/${id}`);
+  const data = await res.json();
+  const s = document.getElementById('phaseSelect');
+  s.innerHTML = '<option value="">-- Sélectionner une phase --</option>';
+  data.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.nom;
+    s.appendChild(opt);
+  });
+}
+async function loadPhases(id) {
+  const res = await fetch(`/programme_config/get_phases/${id}`);
+  const data = await res.json();
+  const list = document.getElementById('phasesList');
+  list.innerHTML = data.length === 0 ? '<p class="text-gray-500 italic">Aucune phase associée.</p>' : '';
+  data.forEach(p => {
+    list.innerHTML += `
+      <div class="flex justify-between items-center border rounded px-3 py-2 bg-white hover:bg-gray-50">
+        <span>${p.nom_phase}</span>
+        <div class="flex items-center gap-2">
+          <form onsubmit="updatePoidsPhase(event, ${p.id}, ${id})" class="flex gap-2">
+            <input name="poids" type="number" step="0.1" value="${p.poids}" class="border rounded px-2 py-1 w-20 text-center">
+            <button class="text-blue-600 hover:text-blue-800">💾</button>
+          </form>
+          <button onclick="deletePhase(${p.id}, ${id})" class="text-red-600 hover:text-red-800">🗑️</button>
+        </div>
+      </div>`;
+  });
+}
+document.getElementById('phaseAddForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const err = document.getElementById('errorMsgPhase');
+  err.classList.add('hidden');
+  err.textContent = '';
+  const res = await fetch('/programme_config/ajouter_phase', { method: 'POST', body: fd });
+  if (res.ok) {
+    loadPhases(fd.get('programme_id'));
+    loadAvailablePhases(fd.get('programme_id'));
+    toggleAddForm();
+  } else {
+    const data = await res.json();
+    err.textContent = data.error || "Erreur lors de l'ajout.";
+    err.classList.remove('hidden');
+  }
+});
+async function updatePoidsPhase(e, id, prog) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch(`/programme_config/modifier_phase/${id}`, { method: 'POST', body: fd });
+  if (res.ok) loadPhases(prog);
+}
+async function deletePhase(id, prog) {
+  if (confirm('Supprimer cette phase ?')) {
+    await fetch(`/programme_config/supprimer_phase/${id}`, { method: 'DELETE' });
+    loadPhases(prog);
+    loadAvailablePhases(prog);
+  }
+}
+
+// =====================================================
+// 🔸 PROFILS
+// =====================================================
+function openProfilsModal(id, nom) {
+  document.getElementById('programmeIdProfil').value = id;
+  document.getElementById('programmeNomProfil').textContent = nom;
+  document.getElementById('profilsModal').classList.remove('hidden');
+  document.getElementById('profilAddForm').classList.add('hidden');
+  loadAvailableProfils(id);
+  loadProfils(id);
+}
+function closeProfilsModal() {
+  document.getElementById('profilsModal').classList.add('hidden');
+}
+function toggleAddProfilForm() {
+  const f = document.getElementById('profilAddForm');
+  const b = document.getElementById('toggleAddProfilBtn');
+  f.classList.toggle('hidden');
+  b.textContent = f.classList.contains('hidden') ? '➕ Ajouter un profil' : '⬆️ Masquer le formulaire';
+}
+async function loadAvailableProfils(id) {
+  const res = await fetch(`/programme_config/get_available_profils/${id}`);
+  const data = await res.json();
+  const s = document.getElementById('profilSelect');
+  s.innerHTML = '<option value="">-- Sélectionner un profil --</option>';
+  data.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.nom;
+    s.appendChild(opt);
+  });
+}
+async function loadProfils(id) {
+  const res = await fetch(`/programme_config/get_profils/${id}`);
+  const data = await res.json();
+  const list = document.getElementById('profilsList');
+  list.innerHTML = data.length === 0 ? '<p class="text-gray-500 italic">Aucun profil associé.</p>' : '';
+  data.forEach(p => {
+    list.innerHTML += `
+      <div class="flex justify-between items-center border rounded px-3 py-2 bg-white hover:bg-gray-50">
+        <span>${p.nom_profil}</span>
+        <div class="flex items-center gap-2">
+          <form onsubmit="updatePoidsProfil(event, ${p.id}, ${id})" class="flex gap-2">
+            <input name="poids" type="number" step="0.1" value="${p.poids}" class="border rounded px-2 py-1 w-20 text-center">
+            <button class="text-blue-600 hover:text-blue-800">💾</button>
+          </form>
+          <button onclick="deleteProfil(${p.id}, ${id})" class="text-red-600 hover:text-red-800">🗑️</button>
+        </div>
+      </div>`;
+  });
+}
+document.getElementById('profilAddForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/programme_config/ajouter_profil', { method: 'POST', body: fd });
+  if (res.ok) {
+    loadProfils(fd.get('programme_id'));
+    loadAvailableProfils(fd.get('programme_id'));
+    toggleAddProfilForm();
+  }
+});
+async function updatePoidsProfil(e, id, prog) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch(`/programme_config/modifier_profil/${id}`, { method: 'POST', body: fd });
+  if (res.ok) loadProfils(prog);
+}
+async function deleteProfil(id, prog) {
+  if (confirm('Supprimer ce profil ?')) {
+    await fetch(`/programme_config/supprimer_profil/${id}`, { method: 'DELETE' });
+    loadProfils(prog);
+    loadAvailableProfils(prog);
+  }
+}
+
+// =====================================================
+// 🔸 PROJETS
+// =====================================================
+function openProjetsModal(id, nom) {
+  document.getElementById('programmeIdProjet').value = id;
+  document.getElementById('programmeNomProjet').textContent = nom;
+  document.getElementById('projetsModal').classList.remove('hidden');
+  document.getElementById('projetAddForm').classList.add('hidden');
+  loadAvailableProjets(id);
+  loadProjets(id);
+}
+function closeProjetsModal() {
+  document.getElementById('projetsModal').classList.add('hidden');
+}
+function toggleAddProjetForm() {
+  const f = document.getElementById('projetAddForm');
+  const b = document.getElementById('toggleAddProjetBtn');
+  f.classList.toggle('hidden');
+  b.textContent = f.classList.contains('hidden') ? '➕ Ajouter un projet' : '⬆️ Masquer le formulaire';
+}
+async function loadAvailableProjets(id) {
+  const res = await fetch(`/programme_config/get_available_projets/${id}`);
+  const data = await res.json();
+  const s = document.getElementById('projetSelect');
+  s.innerHTML = '<option value="">-- Sélectionner un projet --</option>';
+  data.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.titre_projet;
+    s.appendChild(opt);
+  });
+}
+async function loadProjets(id) {
+  const res = await fetch(`/programme_config/get_projets/${id}`);
+  const data = await res.json();
+  const list = document.getElementById('projetsList');
+  list.innerHTML = data.length === 0 ? '<p class="text-gray-500 italic">Aucun projet associé.</p>' : '';
+  data.forEach(p => {
+    list.innerHTML += `
+      <div class="flex justify-between items-center border rounded px-3 py-2 bg-white hover:bg-gray-50">
+        <span>${p.titre_projet}</span>
+        <button onclick="deleteProjet(${p.id}, ${id})" class="text-red-600 hover:text-red-800">🗑️</button>
+      </div>`;
+  });
+}
+document.getElementById('projetAddForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const res = await fetch('/programme_config/ajouter_projet', { method: 'POST', body: fd });
+  if (res.ok) {
+    loadProjets(fd.get('programme_id'));
+    loadAvailableProjets(fd.get('programme_id'));
+    toggleAddProjetForm();
+  }
+});
+async function deleteProjet(id, prog) {
+  if (confirm('Retirer ce projet ?')) {
+    await fetch(`/programme_config/supprimer_projet/${id}`, { method: 'DELETE' });
+    loadProjets(prog);
+    loadAvailableProjets(prog);
+  }
+}
+</script>

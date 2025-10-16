@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résultats de l'évaluation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --biat-blue: #003366;
+            --biat-orange: #f7941d;
+        }
+    </style>
+</head>
+<body class="bg-[#f5f5f5] min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-[var(--biat-blue)] text-white py-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex items-center justify-between px-6">
+            <img src="{{ url_for('static', filename='img/logo_biat.png') }}" alt="Logo BIAT" class="h-10">
+            <h1 class="text-xl font-bold">Résultat</h1>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <div id="contenu-evaluation" class="max-w-4xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-8">
+        <div class="text-center">
+            <h3 class="text-2xl font-semibold text-white bg-[var(--biat-blue)] py-2 px-4 rounded-md mb-6">
+                Résultats de l'évaluation du projet
+            </h3>
+        </div>
+
+        <!-- Informations générales -->
+        <h4 class="text-xl text-gray-800">{{ result['titre'] }}</h4>
+        <p class="text-gray-600"><strong>Description :</strong> {{ result['description'] }}</p>
+        <p class="text-gray-600"><strong>Date de mise en production :</strong> {{ date_mep }}</p>
+
+        <!-- Score WSJF -->
+        <div class="bg-[var(--biat-orange)] text-white p-4 mt-6 rounded-md shadow-md">
+            <h2 class="text-2xl font-bold">Score WSJF : {{ result['score_wsjf'] }}</h2>
+        </div>
+
+        <!-- Coût de retard -->
+        <h5 class="mt-6 text-xl font-semibold text-red-600">Critères du coût de retard</h5>
+        <table class="w-full table-auto mt-4">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-4 py-2 text-left">Critère</th>
+                    <th class="px-4 py-2 text-left">Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for critere, valeur in [
+                    ('Alignement stratégique', result['alignement_strategic']),
+                    ('Impact PNB', result['impact_pnb']),
+                    ('Impact satisfaction', result['impact_satisfaction']),
+                    ('Conquérir client', result['conquerir_client']),
+                    ('Satisfaction client', result['satisfaction_client']),
+                    ('Maîtrise coûts', result['maitrise_couts']),
+                    ('Atténuation menaces', result['attenuation_menaces']),
+                    ('Création opportunités', result['creation_opportunites']),
+                    ('Conditions techniques', result['conditions_techniques']),
+                    ('Deadline règlementaire', result['deadline_reglementaire']),
+                    ('Pression concurrence', result['pression_concurrence']),
+                    ('Échéances stratégiques', result['echeances_strategiques']),
+                    ('Urgence obsolescence', result['urgence_obsolescence']),
+                    ('Dépendances projets', result['dependances_projets'])
+                ] %}
+                <tr class="border-t">
+                    <td class="px-4 py-2">{{ critere }}</td>
+                    <td class="px-4 py-2">{{ valeur }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Complexité -->
+        <h5 class="mt-6 text-xl font-semibold text-yellow-600">Critères de complexité</h5>
+        <table class="w-full table-auto mt-4">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-4 py-2 text-left">Critère</th>
+                    <th class="px-4 py-2 text-left">Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for critere, valeur in [
+                    ("Étendue du périmètre", result['q1']),
+                    ("Nombre d'applications", result['q2']),
+                    ("Interfaces externes", result['q3']),
+                    ("Domaines impactés", result['q4']),
+                    ("Client externe impacté", result['q5']),
+                    ("Volume d'utilisateurs impacté", result['q6']),
+                    ("Proportion de technologies non maitrisées", result['q7']),
+                    ("Importance d'une dépendance à un prestataire externe", result['q8']),
+                    ("Degré d'incertitude", result['q9']),
+                    ("Type de solution", result['q10'])
+                ] %}
+                <tr class="border-t">
+                    <td class="px-4 py-2">{{ critere }}</td>
+                    <td class="px-4 py-2">{{ valeur }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Boutons -->
+        <div class="flex justify-end mt-6 space-x-4 flex-wrap">
+            <a href="/home" class="bg-[var(--biat-blue)] text-white py-2 px-6 rounded-md hover:bg-blue-700 transition">
+                Nouvelle évaluation
+            </a>
+            <a href="{{ url_for('modifier_resultat', id=result['id']) }}" class="bg-yellow-500 text-white py-2 px-6 rounded-md hover:bg-yellow-600 transition">
+                Modifier les critères
+            </a>
+            <button onclick="telechargerPDF()" class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition">
+                Télécharger en PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Script html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function telechargerPDF() {
+            const element = document.getElementById("contenu-evaluation");
+            const opt = {
+                margin: 0.3,
+                filename: 'resultat_evaluation.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+
+</body>
+</html>

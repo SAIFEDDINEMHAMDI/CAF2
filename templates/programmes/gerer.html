@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Gérer le programme : {{ programme.nom }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+
+    <h1 class="text-2xl font-bold mb-6">Gestion du programme : {{ programme.nom }}</h1>
+
+    <!-- Étape 1 : Poids des phases -->
+    <form method="POST" class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">1. Poids des phases (%)</h2>
+        <p class="text-sm text-gray-600 mb-3">Répartissez 100 % sur les 8 phases.</p>
+
+        <table class="min-w-full bg-white border-collapse divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left">Phase</th>
+                    <th class="px-6 py-3 text-center">Poids (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in phases %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">Phase {{ i }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <input
+                                type="number"
+                                name="poids_phase_{{ i }}"
+                                value="{{ poids.get(i, 0) }}"
+                                class="w-24 border rounded px-2 py-1 text-center"
+                                min="0" max="100" step="0.1"
+                            >
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <input type="hidden" name="action" value="poids_phases">
+        <button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            ✅ Sauvegarder les poids
+        </button>
+    </form>
+
+    <!-- Étape 2 : Hypothèses par profil -->
+    <form method="POST" class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">2. Hypothèses par profil (%)</h2>
+        <p class="text-sm text-gray-600 mb-3">Charge moyenne ou disponibilité par profil.</p>
+
+        <table class="min-w-full bg-white border-collapse divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left">Profil</th>
+                    <th class="px-6 py-3 text-center">Hypothèse (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profil in profils %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">{{ profil.nom }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <input
+                                type="number"
+                                name="hypothese_{{ profil.id }}"
+                                value="{{ hypotheses.get(profil.id, {}).get('hypothese', 100) }}"
+                                class="w-24 border rounded px-2 py-1 text-center"
+                                min="0" max="100" step="0.1"
+                            >
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <input type="hidden" name="action" value="hypotheses_profils">
+        <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            ✅ Sauvegarder les hypothèses
+        </button>
+    </form>
+
+<!-- Étape 3 : Tableau final avec formule -->
+<div class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">3. Charge calculée (Poids × Hypothèse)</h2>
+    <table class="min-w-full bg-white border-collapse divide-y divide-gray-200">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-6 py-3 text-left">Profil</th>
+                <th class="px-6 py-3 text-center">Hypothèse (%)</th>
+                {% for phase in tableau_final %}
+                    <th class="px-6 py-3 text-center">{{ phase.phase }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Ligne des poids -->
+            <tr class="bg-gray-50 font-bold">
+                <td class="px-6 py-4 text-left">Poids</td>
+                <td class="px-6 py-4 text-center"></td> <!-- Cellule vide pour hypothèse -->
+                {% for phase in tableau_final %}
+                    <td class="px-6 py-4 text-center">
+                        {{ "%.1f"|format(phase.poids) }}%
+                    </td>
+                {% endfor %}
+            </tr>
+
+            <!-- Une ligne par profil -->
+            {% for profil in profils %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium">{{ profil.nom }}</td>
+                    <td class="px-6 py-4 text-center font-semibold text-gray-800">
+                        {{ "%.1f"|format(hypotheses.get(profil.id, {}).get('hypothese', 100)) }}%
+                    </td>
+                    {% for phase in tableau_final %}
+                        <td class="px-6 py-4 text-center font-mono text-sm">
+                            {{ "%.2f"|format(phase.profils.get(profil.id, 0)) }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    <div class="mt-6">
+        <a href="{{ url_for('priorites') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+            ← Retour
+        </a>
+    </div>
+</div>
+{% endblock %}

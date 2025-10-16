@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - BIAT</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* 🌊 Fond BIAT avec dégradé radial + effet subtil animé */
+    body {
+      background: radial-gradient(circle at top left, #0d47a1, #1565c0, #1e88e5, #42a5f5);
+      background-attachment: fixed;
+      background-size: 200% 200%;
+      animation: smoothGradient 10s ease-in-out infinite alternate;
+      font-family: 'Inter', sans-serif;
+    }
+
+    @keyframes smoothGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 🌫️ Motif léger translucide */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
+      opacity: 0.05;
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body class="relative flex items-center justify-center min-h-screen text-gray-900 overflow-hidden">
+  <!-- Effet lumineux décoratif -->
+  <div class="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 backdrop-blur-[2px]"></div>
+
+  <!-- Carte principale -->
+  <div class="relative z-10 bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl w-full max-w-md p-10 border border-blue-100">
+    <!-- Logo et titre -->
+    <div class="text-center mb-6">
+      <img src="{{ url_for('static', filename='img/logobiat.jpg') }}" alt="Logo BIAT"
+           class="mx-auto h-16 mb-3 rounded-md shadow-sm" />
+      <h1 class="text-2xl font-bold text-blue-700 tracking-tight">Portail de Priorisation</h1>
+      <div class="mt-1 w-16 mx-auto border-b-4 border-blue-500 rounded-full"></div>
+    </div>
+
+    <!-- Messages flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-md text-sm border-l-4
+            {% if category in ['error', 'danger'] %}
+              bg-red-100 text-red-700 border-red-500
+            {% else %}
+              bg-green-100 text-green-700 border-green-500
+            {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulaire -->
+    <form method="POST" class="space-y-5">
+      <!-- Nom d’utilisateur -->
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+          Nom d’utilisateur
+        </label>
+        <input type="text" id="username" name="username" required autofocus
+               class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+      </div>
+
+      <!-- Mot de passe -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+          Mot de passe
+        </label>
+        <input type="password" id="password" name="password" required
+               class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+      </div>
+
+      <!-- Bouton -->
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+        Se connecter
+      </button>
+    </form>
+  </div>
+</body>
+</html>

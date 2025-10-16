@@ -1,0 +1,49 @@
+<!--{% extends "base.html" %}
+{% block title %}{{ action }} une valeur métier{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">{{ action }} une valeur métier</h1>
+
+    <form method="POST" class="space-y-4 bg-white p-6 rounded shadow">
+      
+        <div>
+        
+            <label for="libelle" class="block text-sm font-medium text-gray-700">Libellé</label>
+            <input type="text" name="libelle" id="libelle" required
+                   value="{{ valeur.libelle if valeur else '' }}"
+                   class="mt-1 block w-full border-gray-300 rounded px-3 py-2 focus:ring focus:ring-biat-secondary/50">
+        </div>
+       
+        <div>
+            <label for="libelle" class="block text-sm font-medium text-gray-700">Type Libellé</label>
+            <input type="text" name="type_libelle" id="type_libelle" required
+                   value="{{ valeur.type_libelle if valeur else '' }}"
+                   class="mt-1 block w-full border-gray-300 rounded px-3 py-2 focus:ring focus:ring-biat-secondary/50">
+        </div>
+        <div>
+            <label for="libelle" class="block text-sm font-medium text-gray-700">Valeur Libellé</label>
+            <input type="text" name="type_libelle" id="valeur_libelle" required
+                   value="{{ valeur.type_libelle if valeur else '' }}"
+                   class="mt-1 block w-full border-gray-300 rounded px-3 py-2 focus:ring focus:ring-biat-secondary/50">
+        </div>
+       
+        <div>
+            <label for="ponderation" class="block text-sm font-medium text-gray-700">Pondération</label>
+            <input type="number" name="ponderation" id="ponderation" min="1" max="5" required
+                   value="{{ valeur.ponderation if valeur else '' }}"
+                   class="mt-1 block w-full border-gray-300 rounded px-3 py-2 focus:ring focus:ring-biat-secondary/50">
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('valeurs_metier.liste_valeurs') }}"
+               class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded transition">Annuler</a>
+            <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                {{ action }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+-->

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Affecter un projet existant - {{ programme.nom }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Affecter un projet à <span class="text-biat-primary">{{ programme.nom }}</span></h1>
+
+    <form method="POST">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Sélectionner un projet</label>
+            <select name="projet_id" required class="w-full border rounded px-3 py-2">
+                <option value="">-- Sélectionner un projet --</option>
+                {% for p in projets %}
+                    <option value="{{ p.id }}">{{ p.titre }} (WSJF: {{ "%.2f"|format(p.score_wsjf) }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex justify-end space-x-2">
+            <a href="{{ url_for('programmes.gerer_projets', id=programme.id) }}"
+               class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+                Annuler
+            </a>
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                ✅ Affecter au programme
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

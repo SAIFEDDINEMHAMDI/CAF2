@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Accompagnement Externe{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Accompagnement Externe</h1>
+
+  <!-- 🔹 Barre de recherche + actions -->
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <form method="get" action="{{ url_for('accompagnement.liste_accompagnement') }}" class="flex items-center gap-2">
+      <input type="text" name="q" value="{{ request.args.get('q','') }}"
+             placeholder="🔍 Rechercher profil ou nb ETP..."
+             class="border border-gray-300 rounded px-3 py-2 text-sm w-72 focus:ring-blue-400 focus:border-blue-400">
+    </form>
+
+    {% if user_role != 'user' %}
+    <div class="flex items-center gap-3">
+      <!-- ➕ Ajouter -->
+      <button onclick="openAddModal()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m7-7H5"/></svg>
+        Ajouter
+      </button>
+
+      <!-- 📥 Importer Excel -->
+      <form method="POST" action="{{ url_for('accompagnement.import_excel') }}" enctype="multipart/form-data">
+        <label for="excelFile"
+               class="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+               d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Importer Excel
+        </label>
+        <input id="excelFile" type="file" name="file" accept=".xlsx" class="hidden" onchange="this.form.submit()">
+      </form>
+
+      <!-- 📄 Télécharger Modèle -->
+      <a href="{{ url_for('accompagnement.telecharger_modele') }}"
+         class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+             d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg>
+        Télécharger modèle
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 🔹 Tableau -->
+  <div class="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+    <table class="min-w-full bg-white divide-y divide-gray-200 text-sm">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">Profil</th>
+          <th class="px-4 py-3 text-center font-semibold">Nb ETP</th>
+          <th class="px-4 py-3 text-center font-semibold">Date Début</th>
+          <th class="px-4 py-3 text-center font-semibold">Date Fin</th>
+          {% if user_role != 'user' %}
+          <th class="px-4 py-3 text-center font-semibold">Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for a in accompagnements %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-4 py-3">{{ a.profil or '—' }}</td>
+          <td class="px-4 py-3 text-center">{{ a.nb_etp }}</td>
+          <td class="px-4 py-3 text-center">{{ a.date_debut }}</td>
+          <td class="px-4 py-3 text-center">{{ a.date_fin }}</td>
+          {% if user_role != 'user' %}
+          <td class="px-4 py-3 text-center">
+            <div class="flex items-center justify-center gap-3">
+              <!-- ✏️ Modifier -->
+              <button type="button"
+                onclick="openEditModal('{{ a.id }}','{{ a.profil_id or '' }}','{{ a.nb_etp }}','{{ a.date_debut }}','{{ a.date_fin }}')"
+                class="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600"
+                title="Modifier">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                  <path fill-rule="evenodd" d="M4 16a1 1 0 011-1h9a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+
+              <!-- 🗑️ Supprimer -->
+              <form method="POST" action="{{ url_for('accompagnement.supprimer_accompagnement', id=a.id) }}"
+                    onsubmit="return confirm('Supprimer cet accompagnement ?')"
+                    class="inline">
+                <button type="submit"
+                        class="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
+                        title="Supprimer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-gray-500 py-4">Aucun accompagnement trouvé</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🔹 Pagination -->
+  <div class="flex justify-center items-center mt-6 gap-6">
+    {% if page > 1 %}
+      <a href="{{ url_for('accompagnement.liste_accompagnement', page=page-1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">⬅️</a>
+    {% endif %}
+    <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
+    {% if page < total_pages %}
+      <a href="{{ url_for('accompagnement.liste_accompagnement', page=page+1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">➡️</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if user_role != 'user' %}
+<!-- 🔹 MODALE AJOUT -->
+<div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un accompagnement</h2>
+    <form method="POST" action="{{ url_for('accompagnement.ajouter_accompagnement') }}">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">Profil</label>
+          <select name="profil_id" class="w-full border px-3 py-2 rounded">
+            <option value="">-- Sélectionner --</option>
+            {% for p in profils %}
+              <option value="{{ p.id }}">{{ p.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Nb ETP</label>
+          <input type="number" step="0.1" name="nb_etp" class="w-full border px-3 py-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Date Début</label>
+          <input type="date" name="date_debut" class="w-full border px-3 py-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Date Fin</label>
+          <input type="date" name="date_fin" class="w-full border px-3 py-2 rounded">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Ajouter</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 🔹 MODALE MODIFICATION -->
+<div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier l'accompagnement</h2>
+    <form id="editForm" method="POST">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">Profil</label>
+          <select id="editProfil" name="profil_id" class="w-full border px-3 py-2 rounded">
+            {% for p in profils %}
+              <option value="{{ p.id }}">{{ p.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Nb ETP</label>
+          <input type="number" step="0.1" id="editNbETP" name="nb_etp" class="w-full border px-3 py-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Date Début</label>
+          <input type="date" id="editDateDebut" name="date_debut" class="w-full border px-3 py-2 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Date Fin</label>
+          <input type="date" id="editDateFin" name="date_fin" class="w-full border px-3 py-2 rounded">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Mettre à jour</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAddModal(){
+  const m=document.getElementById("addModal"),c=document.getElementById("addModalContent");
+  m.classList.remove("hidden");
+  setTimeout(()=>{c.classList.remove("scale-95","opacity-0");c.classList.add("scale-100","opacity-100");},50);
+}
+function closeAddModal(){
+  const m=document.getElementById("addModal"),c=document.getElementById("addModalContent");
+  c.classList.remove("scale-100","opacity-100");
+  c.classList.add("scale-95","opacity-0");
+  setTimeout(()=>m.classList.add("hidden"),200);
+}
+function openEditModal(id,profil,nb_etp,date_debut,date_fin){
+  document.getElementById("editProfil").value=profil;
+  document.getElementById("editNbETP").value=nb_etp;
+  document.getElementById("editDateDebut").value=date_debut;
+  document.getElementById("editDateFin").value=date_fin;
+  document.getElementById("editForm").action="/accompagnement/modifier/"+id;
+  const m=document.getElementById("editModal"),c=document.getElementById("editModalContent");
+  m.classList.remove("hidden");
+  setTimeout(()=>{c.classList.remove("scale-95","opacity-0");c.classList.add("scale-100","opacity-100");},50);
+}
+function closeEditModal(){
+  const m=document.getElementById("editModal"),c=document.getElementById("editModalContent");
+  c.classList.remove("scale-100","opacity-100");
+  c.classList.add("scale-95","opacity-0");
+  setTimeout(()=>m.classList.add("hidden"),200);
+}
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,311 @@
+{% set role = session.user.role if session.user is defined and session.user else None %}
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}2025 - Application{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    {% block styles %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-biat-primary text-white min-h-screen transition-all duration-300 flex-shrink-0 fixed left-0 top-0 z-40">
+        <div class="p-6 border-b border-biat-secondary/20">
+            <div class="flex items-center space-x-3">
+                <img src="{{ url_for('static', filename='img/biatit.png') }}" alt="Logo BIAT IT" class="h-8">
+            </div>
+        </div>
+
+        <!-- Toast container -->
+        <div id="toast-container" class="fixed top-4 right-4 space-y-2 z-50">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="toast px-6 py-5 rounded shadow-lg text-base flex items-center space-x-2 border-l-4 transform transition-all duration-500 translate-x-5 opacity-0
+                            {% if category == 'error' %}
+                                bg-red-50 text-red-800 border-red-500
+                            {% elif category == 'success' %}
+                                bg-green-50 text-green-800 border-green-500
+                            {% elif category == 'warning' %}
+                                bg-yellow-50 text-yellow-800 border-yellow-500
+                            {% else %}
+                                bg-blue-50 text-blue-800 border-blue-500
+                            {% endif %}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Script Toast -->
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const toasts = document.querySelectorAll(".toast");
+                toasts.forEach((toast, index) => {
+                    setTimeout(() => {
+                        toast.classList.remove("translate-x-5", "opacity-0");
+                        toast.classList.add("translate-x-0", "opacity-100");
+                    }, 100 + index * 100);
+                    setTimeout(() => {
+                        toast.classList.remove("translate-x-0", "opacity-100");
+                        toast.classList.add("translate-x-5", "opacity-0");
+                        setTimeout(() => toast.remove(), 500);
+                    }, 6000 + index * 200);
+                });
+            });
+        </script>
+
+        <nav class="mt-4">
+            <ul class="space-y-1 px-4">
+              <!-- Accueil
+                <li>
+                    <a href="{{ url_for('home') }}"
+                       class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span>Accueil</span>
+                    </a>
+                </li>-->
+
+                <!-- ✅ Administration (visible uniquement pour admin et superadmin) -->
+                
+             {% if role in ['admin', 'superadmin'] %}
+<li>
+    <button onclick="toggleAdminMenu()" class="w-full flex items-center justify-between p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition focus:outline-none">
+        <span class="flex items-center space-x-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>Administration</span>
+        </span>
+        <svg id="admin-arrow" xmlns="http://www.w3.org/2000/svg"
+             class="h-4 w-4 transform transition-transform duration-300"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+
+    <ul id="admin-submenu" class="ml-8 mt-1 overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+        <li><a href="{{ url_for('complexite.liste_complexite') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Complexité</a></li>
+        <li><a href="{{ url_for('categorie.liste_categories') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Catégorie de projet</a></li>
+        <li><a href="{{ url_for('statut.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des projets</a></li>
+               <li><a href="{{ url_for('statut_demande.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des Demande</a></li>
+
+        <li><a href="{{ url_for('phase.liste_phases') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Phase d'un programme</a></li>
+                <li><a href="{{ url_for('programme_config.liste_programmes') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Programmes</a></li>
+
+        <li><a href="{{ url_for('domaines.liste_domaines') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Domaine d'activité</a></li>
+                 <li><a href="{{ url_for('regles_complexite.liste_regles') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Règles de Complexité</a></li>
+<li><a href="{{ url_for('affectation.liste_affectation') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Affectation</a></li>
+
+
+    </ul>
+</li>
+{% endif %}
+
+                </li>
+            
+
+                <script>
+                    function toggleAdminMenu() {
+                        const submenu = document.getElementById("admin-submenu");
+                        const arrow = document.getElementById("admin-arrow");
+                        submenu.classList.toggle("max-h-0");
+                        submenu.classList.toggle("max-h-96");
+                        arrow.classList.toggle("rotate-180");
+                    }
+                </script>
+
+                <!-- Menus communs à tous les rôles -->
+                <li><a href="{{ url_for('priorites') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>Prioriser par WSJF</span></a>
+                </li>
+
+                <li><a href="{{ url_for('caf.caf_automatique') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>CAF Disponible</span></a></li>
+
+                <li><a href="{{ url_for('caf.caf_requise') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M16 8v8m-4-5v5m-4-2v2m12-6v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2z" />
+                    </svg>
+                    <span>Vue par Semaine</span></a></li>
+
+                <li><a href="{{ url_for('caf.caf_disponibles') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Build & Run</span></a></li>
+
+                <li><a href="{{ url_for('collaborateurs.liste_collaborateurs') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                    <span>Collaborateurs</span></a></li>
+  <li>
+            <a href="{{ url_for('accompagnement.liste_accompagnement') }}"
+               class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 16v2a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v2m0 8l4-4m0 0l-4-4m4 4H9" />
+                </svg>
+                <span>Accompagnement externe</span>
+            </a>
+        </li>
+        <li>
+          <a href="{{ url_for('recrutement.liste_recrutement') }}"
+             class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Recrutement</span>
+          </a>
+        </li>
+                <li><a href="{{ url_for('profils.liste_profils') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Profils</span></a></li>
+
+              <!--  <li><a href="{{ url_for('programmes.liste_programmes') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Programmes</span></a></li>
+
+                <li><a href="{{ url_for('import_excel.import_excel') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Import fichier</span></a></li>-->
+
+                <li><a href="{{ url_for('projet.liste_projets') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Liste des projets</span></a></li>
+                <li><a href="{{ url_for('projet.liste_demandes') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Liste des demandes</span></a></li>
+                <li><a href="{{ url_for('caf.caf_dashboard') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Dashbord CAF</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Contenu principal -->
+    <div id="main-content-wrapper" class="flex-1 min-h-screen flex flex-col transition-margin duration-300 ml-64">
+        <header class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+            <button id="toggle-sidebar" class="text-gray-700 focus:outline-none focus:ring-2 focus:ring-biat-secondary/50 p-1 rounded">
+                <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <div class="flex items-center space-x-6">
+                {% if session.user %}
+                    <span class="text-sm text-gray-600 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        {{ session.user.username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="text-sm text-red-600 hover:text-red-800 font-medium">
+                        Déconnexion
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                        Connexion
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main id="main-content" class="container mx-auto mt-6 px-6 flex-grow">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="bg-white border-t py-4 px-6 text-center text-sm text-gray-600">
+            © 2025 BIAT IT - All Rights Reserved
+        </footer>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById("sidebar");
+        const toggleBtn = document.getElementById("toggle-sidebar");
+        const toggleIcon = document.getElementById("toggle-icon");
+        const mainWrapper = document.getElementById("main-content-wrapper");
+        const isHidden = localStorage.getItem("sidebar-hidden") === "true";
+
+        if (isHidden) {
+            sidebar.classList.add("-ml-64");
+            mainWrapper.classList.replace("ml-64", "ml-0");
+            toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                   d="M15 19l-7-7 7-7" />`;
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("-ml-64");
+            mainWrapper.classList.toggle("ml-64");
+            mainWrapper.classList.toggle("ml-0");
+            const hidden = sidebar.classList.contains("-ml-64");
+            toggleIcon.innerHTML = hidden
+                ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 19l-7-7 7-7" />`
+                : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16" />`;
+            localStorage.setItem("sidebar-hidden", hidden);
+        });
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        biat: { primary: '#003366', secondary: '#0066CC', light: '#E6F0FF' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

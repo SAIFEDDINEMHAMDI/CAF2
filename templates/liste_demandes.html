@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Liste des demandes{% endblock %}
+
+{% block content %}
+<div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <h1 class="text-3xl font-bold mb-8 text-blue-600 text-center md:text-left">Liste des demandes importées</h1>
+
+  <!-- 🔹 Barre de recherche / filtres -->
+  <form method="get" action="{{ url_for('projet.liste_demandes') }}"
+        class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+    <div class="flex flex-wrap items-center gap-3">
+      <input type="text" name="q" value="{{ search or '' }}"
+             placeholder="Rechercher un demande, domaine, programme..."
+             class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-80 focus:ring-blue-400 focus:border-blue-400 text-sm">
+
+      <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+        🔍 Rechercher
+      </button>
+
+      <label class="flex items-center gap-2 text-sm text-gray-700">
+        <input type="checkbox" name="incomplets" value="1"
+               onchange="this.form.submit()"
+               {% if incomplets %}checked{% endif %}>
+        Afficher seulement les incomplets
+      </label>
+
+      <!-- 🔽 Filtre Retenue -->
+      <label class="flex items-center gap-2 text-sm text-gray-700">
+        <span>Retenue :</span>
+       <select name="retenue" onchange="this.form.submit()"
+        class="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-blue-400 focus:border-blue-400">
+  <option value="" {% if not retenue_filter %}selected{% endif %}>-- Toutes --</option>
+  <option value="0" {% if retenue_filter == '2' %}selected{% endif %}>Non retenue</option>
+  <option value="1" {% if retenue_filter == '1' %}selected{% endif %}>Retenue</option>
+  <option value="null" {% if retenue_filter == 'null' %}selected{% endif %}>À prévoir</option>
+</select>
+
+      </label>
+    </div>
+
+    <!-- 📤 Bouton Import -->
+    <div class="flex justify-end md:justify-start">
+      <button type="button" onclick="openImportModal()"
+              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-full shadow transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Importer Excel
+      </button>
+    </div>
+  </form>
+
+  <!-- 🧾 Tableau principal (responsive + large) -->
+  <div class="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
+    <table class="min-w-[1400px] bg-white divide-y divide-gray-200 text-[15px] leading-relaxed">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-4 text-left font-semibold text-gray-700 w-16">ID</th>
+          <th class="px-6 py-4 text-left font-semibold text-gray-700 w-64">Titre</th>
+          <th class="px-6 py-4 text-left font-semibold text-gray-700 w-56">Programme</th>
+          <th class="px-6 py-4 text-left font-semibold text-gray-700 w-56">Domaine</th>
+         <!-- <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Statut</th>-->
+          <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Score Complexité</th>
+          <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Estimation (JH)</th>
+          <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Date MEP</th>
+          <th class="px-6 py-4 text-center font-semibold text-gray-700 w-40">Retenue</th>
+          <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-200">
+        {% for p in projets %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-5 text-gray-800">{{ p.id }}</td>
+          <td class="px-6 py-5 text-gray-800 break-words">{{ p.titre }}</td>
+          <td class="px-6 py-5 text-gray-700">{{ p.programme }}</td>
+          <td class="px-6 py-5 text-gray-700">{{ p.domaine }}</td>
+         <!-- <td class="px-6 py-5 text-gray-700">{{ p.statut }}</td>-->
+          <td class="px-6 py-5 text-center font-semibold text-blue-700">{{ p.score_complexite or 0 }}</td>
+          <td class="px-6 py-5 text-center font-semibold text-green-700">{{ p.estimation_jh or 0 }}</td>
+          <td class="px-6 py-5 text-gray-700">{{ p.date_mep or '-' }}</td>
+
+          <td class="px-6 py-5 text-center">
+            {% if p.retenue is none %}
+              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                À prévoir
+              </span>
+            {% elif p.retenue == 2 %}
+              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                Non retenue
+              </span>
+           {% elif p.retenue ==1 %}
+              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+                Retenue prévue
+              </span>
+            {% endif %}
+          </td>
+
+          <td class="px-6 py-5 text-center">
+            <div class="flex items-center justify-center gap-3">
+              <a href="{{ url_for('projet.modifier_demande', projet_id=p.id) }}"
+                 class="inline-flex items-center justify-center p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
+                 title="Modifier">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                  <path fill-rule="evenodd" d="M4 16a1 1 0 011-1h9a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+
+              <form method="POST" action="{{ url_for('projet.supprimer_demande', projet_id=p.id) }}"
+                    onsubmit="return confirm('Supprimer le projet {{ p.titre }} ?')">
+                <button type="submit"
+                        class="inline-flex items-center justify-center p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition"
+                        title="Supprimer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10" class="text-center px-6 py-6 text-gray-500 italic">
+            Aucun projet trouvé.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Pagination -->
+  <div class="flex justify-center items-center mt-6 gap-6">
+    {% if page > 1 %}
+      <a href="{{ url_for('projet.liste_demandes', page=page-1, profil_id=profil_id, search=request.args.get('search','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">⬅️</a>
+    {% endif %}
+    <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
+    {% if page < total_pages %}
+      <a href="{{ url_for('projet.liste_demandes', page=page+1, profil_id=profil_id, search=request.args.get('search','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">➡️</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 🌟 Modale Import Excel -->
+<div id="importModal"
+     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 transition-opacity duration-300 ease-out opacity-0">
+  <div id="importModalContent"
+       class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 transform scale-95 transition-all duration-300 ease-out">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-blue-600">📤 Importer un fichier Excel</h2>
+      <button onclick="closeImportModal()" class="text-gray-500 hover:text-gray-700 text-lg font-bold">×</button>
+    </div>
+
+    <form method="POST" action="/import/" enctype="multipart/form-data">
+      <div class="mb-4">
+        <label for="file" class="block text-gray-700 font-medium mb-2">
+          Choisir un fichier Excel (.xls / .xlsx)
+        </label>
+        <input type="file" id="file" name="file" accept=".xls,.xlsx" required
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400" />
+      </div>
+      <div class="flex justify-end">
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md">
+          🚀 Importer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('importModal');
+  const content = document.getElementById('importModalContent');
+
+  function openImportModal() {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+      modal.classList.add('opacity-100');
+      modal.classList.remove('opacity-0');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+    }, 20);
+  }
+
+  function closeImportModal() {
+    modal.classList.add('opacity-0');
+    modal.classList.remove('opacity-100');
+    content.classList.add('scale-95');
+    content.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }, 250);
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,5 @@
+openpyxl
+Flask==3.0.0
+pandas==2.1.0
+pyxlsb==1.0.11
+python-dotenv==1.0.0

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Liste des Profils Techniques{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Profils Techniques</h1>
+
+    <div class="mb-4 flex justify-between items-center">
+        <p class="text-gray-600">
+            Répartition des profils techniques avec leur ratio BUILD/RUN.
+        </p>
+        <a href="{{ url_for('profils.ajouter_profil') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
+            ➕ Ajouter un profil
+        </a>
+    </div>
+
+    <!-- Tableau -->
+    <div class="overflow-x-auto shadow rounded-lg border">
+        <table class="min-w-full bg-white divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-700">Nom du profil</th>
+                    <th class="px-6 py-3 text-center font-semibold text-gray-700">% Build</th>
+                    <th class="px-6 py-3 text-center font-semibold text-gray-700">% Run</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-700">Description</th>
+                    <th class="px-6 py-3 text-right font-semibold text-gray-700">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for profil in profils %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ profil.nom }}</td>
+                        <td class="px-6 py-4 text-center text-sm">{{ profil.build_ratio }}%</td>
+                        <td class="px-6 py-4 text-center text-sm">{{ profil.run_ratio }}%</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ profil.description or '-' }}</td>
+                        <td class="px-6 py-4 text-right text-sm space-x-3">
+                            <a href="{{ url_for('profils.modifier_profil', id=profil.id) }}" class="text-blue-600 hover:text-blue-800">Modifier</a>
+                            <form action="{{ url_for('profils.supprimer_profil', id=profil.id) }}" method="post" class="inline">
+                                <button type="submit" onclick="return confirm('Êtes-vous sûr ?')"
+                                        class="text-red-600 hover:text-red-800">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

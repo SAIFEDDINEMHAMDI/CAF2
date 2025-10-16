@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Interface 2 - Analyse des Risques</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --biat-blue: #003366;
+            --biat-orange: #f7941d;
+        }
+
+        .tooltip {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-left: 10px;
+            padding: 6px 10px;
+            background-color: black;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            width: 250px;
+            z-index: 10;
+        }
+
+        .relative:hover .tooltip {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-[#f5f5f5] min-h-screen">
+    <header class="bg-[var(--biat-blue)] text-white py-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex items-center justify-between px-6">
+            <img src="{{ url_for('static', filename='img/logobiat.jpg') }}" alt="Logo BIAT" class="h-10">
+            <h1 class="text-2xl font-bold">Cout du retard</h1>
+                <p class="text-sm text-gray-200">Projet de transformation BIAT</p>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto bg-white mt-10 p-10 shadow-xl rounded-xl">
+        <form method="POST" class="space-y-10 text-base">
+            {% for champ, label, description in [
+                ('alignement_strategic', "Alignement stratégique", "Axes stratégiques de l'année: Nouvelle Architecture IT, Nouveau concept Agence, Plan de continuité d'activité, Pilotage de la performance, 
+Catégories: Amélioration de la performance/Coissance Interne ou externe/ Organisation/Obligatoire ou réglementaire/Innovation/Développement produit ou service."),
+                ('impact_pnb', "Impact sur le PNB", "Estimation de l'effet du projet sur le Produit Net Bancaire."),
+                ('conquerir_client', "Conquête de nouveaux clients", "Capacité du projet à attirer de nouveaux clients."),
+                ('impact_satisfaction', "Impact sur la satisfaction client", "Influence du projet sur la perception et l’expérience client."),
+                ('maitrise_couts', "Maîtrise des coûts", "Mesure dans laquelle le projet contribue à la réduction ou au contrôle des coûts."),
+                ('attenuation_menaces', "Atténuation des menaces", " (opérationnels, liquidité, crédit, conformité, sécurité, technologique…) ."),
+                ('creation_opportunites', "Création d'opportunités", "Possibilité d’ouvrir de nouveaux marchés, produits ou partenariats."),
+                ('conditions_techniques', "Conditions techniques favorables", "Présence de conditions techniques permettant un déploiement efficace."),
+                ('deadline_reglementaire', "Deadline réglementaire", "Urgence liée au respect d’exigences légales ou réglementaires."),
+                ('pression_concurrence', "Pression concurrentielle", "Mesure de la menace concurrentielle justifiant la priorité."),
+                ('echeances_strategiques', "Échéances stratégiques", "Contraintes de calendrier liées à des objectifs stratégiques."),
+                ('dependances_projets', "Dépendances interprojets", "Liens ou impacts avec d’autres projets en cours."),
+                ('urgence_obsolescence', "Urgence d'obsolescence technologique", "Nécessité de remplacer des technologies obsolètes.")
+            ] %}
+            <div class="relative">
+                <label class="block font-semibold text-gray-800 text-lg mb-2" for="{{ champ }}">
+                    {{ label }} *
+                </label>
+                <div class="absolute top-0 right-0 mt-1 mr-1">
+                    <div class="tooltip">
+                        <p>{{ description }}</p>
+                    </div>
+                </div>
+                <select name="{{ champ }}" id="{{ champ }}" required
+                    class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[var(--biat-orange)] text-base">
+                    <option value="" disabled selected>-- Sélectionner une option --</option>
+                    {% if champ == 'alignement_strategic' %}
+                        <option value="fortement_aligne">Fortement aligné</option>
+                        <option value="aligne">Aligné</option>
+                        <option value="partiellement_aligne">Partiellement aligné</option>
+                        <option value="non_aligne">Non aligné</option>
+                    {% elif champ == 'impact_pnb' or champ == 'maitrise_couts' %}
+                        <option value="gt_5m">Supérieur à 5M</option>
+                        <option value="between_1m_5m">Entre 1M et 5M</option>
+                        <option value="between_500k_1m">Entre 500K et 1M</option>
+                        <option value="lt_500k">Inférieur à 500K</option>
+                    {% elif champ == 'conquerir_client' %}
+                        <option value="gt_10p">Supérieur à 10%</option>
+                        <option value="between_5_10p">Entre 5% et 10%</option>
+                        <option value="proche_0">Proche de 0%</option>
+                        <option value="negatif">Légèrement négatif</option>
+                    {% elif champ == 'impact_satisfaction' %}
+                        <option value="impact_tres_eleve">Très élevé</option>
+                        <option value="impact_eleve">Élevé</option>
+                        <option value="impact_modere">Modéré</option>
+                        <option value="impact_limite">Limité</option>
+                    {% elif champ == 'attenuation_menaces' %}
+                        <option value="tres_eleve">Très élevé</option>
+                        <option value="eleve">Élevé</option>
+                        <option value="moyen">Moyen</option>
+                        <option value="faible">Faible</option>
+                    {% elif champ == 'creation_opportunites' %}
+                        <option value="exceptionnelle">Exceptionnelle</option>
+                        <option value="elevee">Élevée</option>
+                        <option value="acceptable">Acceptable</option>
+                        <option value="limitee">Limitée</option>
+                    {% elif champ == 'conditions_techniques' %}
+                        <option value="diversifiees_robustes">Diversifiées, robustes et à forte contribution</option>
+                        <option value="pertinentes">Solutions techniques pertinentes</option>
+                        <option value="modestes">Modestes mais contribution notable</option>
+                        <option value="impact_limite">Impact limité</option>
+                    {% elif champ == 'deadline_reglementaire' %}
+                        <option value="criticite_extreme_imm">Criticité extrême - Proximité immédiate</option>
+                        <option value="criticite_elevee_rapp">Criticité élevée - Proximité rapprochée</option>
+                        <option value="criticite_moderee_ger">Criticité modérée - Proximité gérable</option>
+                        <option value="criticite_faible_ger">Criticité faible - Proximité gérable</option>
+                    {% elif champ == 'pression_concurrence' or champ == 'echeances_strategiques' %}
+                        <option value="criticite_extreme">Criticité extrême</option>
+                        <option value="criticite_elevee">Criticité élevée</option>
+                        <option value="criticite_moderee">Criticité modérée</option>
+                        <option value="criticite_faible">Criticité faible</option>
+                    {% elif champ == 'dependances_projets' %}
+                        <option value="essentielle">Essentielles</option>
+                        <option value="significative">Significatives</option>
+                        <option value="moderee">Modérées</option>
+                        <option value="aucune">Aucune</option>
+                    {% elif champ == 'urgence_obsolescence' %}
+                        <option value="immediate">Immédiate</option>
+                        <option value="court_terme">À court terme</option>
+                        <option value="moyen_terme">À moyen terme</option>
+                        <option value="long_terme">À long terme</option>
+                    {% endif %}
+                </select>
+            </div>
+            {% endfor %}
+
+            <div class="flex justify-between items-center pt-8">
+                <a href="{{ url_for('interface1') }}" class="text-[var(--biat-blue)] underline hover:text-blue-700 text-base font-medium">
+                    ← Retour
+                </a>
+                <button type="submit" class="bg-[var(--biat-orange)] text-white font-semibold px-6 py-2 rounded hover:bg-orange-500 transition">
+                    Suivant →
+                </button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

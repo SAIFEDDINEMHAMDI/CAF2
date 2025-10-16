@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Suivi des Demandes - BIAT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --biat-blue: #003366;
+            --biat-orange: #f7941d;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    <!-- Header -->
+    <header class="bg-[var(--biat-blue)] text-white py-4 shadow-md">
+        <div class="max-w-6xl mx-auto flex items-center justify-between px-6">
+            <img src="{{ url_for('static', filename='img/logo_biat.png') }}" alt="Logo BIAT" class="h-10">
+            <h1 class="text-xl font-bold">Suivi des Demandes WSJF</h1>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="max-w-6xl mx-auto p-6 mt-10 bg-white shadow-lg rounded-2xl">
+        {% if projets %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-bold text-gray-600">Titre</th>
+                        <th class="px-6 py-3 text-left text-sm font-bold text-gray-600">Type</th>
+                        <th class="px-6 py-3 text-left text-sm font-bold text-gray-600">Date MEP</th>
+                        <th class="px-6 py-3 text-left text-sm font-bold text-gray-600">Release</th>
+                        <th class="px-6 py-3 text-left text-sm font-bold text-gray-600">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    {% for projet in projets %}
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ projet['titre'] }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ projet['type_demande'] }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ projet['date_mep'] }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">{{ projet['release'] }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if projet['statut'] == 'En attente' %}
+                                    bg-yellow-100 text-yellow-800
+                                {% elif projet['statut'] == 'Validée' %}
+                                    bg-green-100 text-green-800
+                                {% elif projet['statut'] == 'Rejetée' %}
+                                    bg-red-100 text-red-800
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}
+                            ">
+                                {{ projet['statut'] }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <a href="{{ url_for('edit_projet', id=projet['id']) }}" 
+                               class="text-blue-600 hover:text-blue-800 font-semibold">Éditer</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-center text-gray-600">Aucune demande enregistrée pour le moment.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

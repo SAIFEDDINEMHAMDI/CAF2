@@ -1,0 +1,396 @@
+<!-- templates/complexite_list.html -->
+{% extends "base.html" %}
+{% block title %}Complexité{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Complexité</h1>
+
+  <!-- Barre de recherche + bouton Ajouter -->
+  <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <form method="get" action="{{ url_for('complexite.liste_complexite') }}" class="flex items-center gap-2">
+      <input type="text" name="q" value="{{ request.args.get('q','') }}"
+             placeholder="Rechercher libellé / type / valeur / pondération..."
+             class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-80 focus:ring-blue-400 focus:border-blue-400">
+      <button type="submit"
+              class="bg-white border border-gray-300 px-3 py-2 rounded text-blue-600 hover:text-blue-800 transition">
+        🔍
+      </button>
+    </form>
+
+    <button onclick="openAddModal()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg">
+      ➕ Ajouter une complexité
+    </button>
+  </div>
+
+  <!-- Tableau -->
+  <div class="overflow-x-auto shadow-xl rounded-lg border border-gray-200">
+    <table class="min-w-full bg-white divide-y divide-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Libellé</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Type Libellé</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Valeur Libellé</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Pondération</th>
+          <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for val in complexites %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-sm text-gray-800">{{ val.libelle }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ val.type_libelle }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ val.valeur_libelle }}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">{{ val.ponderation }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-center gap-3">
+              <button type="button"
+        onclick='openEditModal({{ val.id|tojson }}, {{ val.libelle|tojson }}, {{ val.type_libelle|tojson }}, {{ val.valeur_libelle|tojson }}, {{ val.ponderation|tojson }})'
+        class="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600"
+        title="Modifier">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+    <path fill-rule="evenodd" d="M4 16a1 1 0 011-1h9a1 1 0 110 2H5a1 1 0 01-1-1z" clip-rule="evenodd"/>
+  </svg>
+</button>
+              <form action="{{ url_for('complexite.supprimer_complexite', id=val.id) }}" method="post" class="inline">
+                <button type="submit"
+                onclick="return confirm('Supprimer {{ val.libelle }} ?')"
+                class="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600"
+                title="Supprimer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center px-6 py-6 text-gray-500">Aucune complexité trouvée</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center items-center mt-6 gap-6">
+    {% if page > 1 %}
+      <a href="{{ url_for('complexite.liste_complexite', page=page-1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">⬅️</a>
+    {% endif %}
+    <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
+    {% if page < total_pages %}
+      <a href="{{ url_for('complexite.liste_complexite', page=page+1, q=request.args.get('q','')) }}"
+         class="text-blue-600 hover:text-blue-800 text-lg">➡️</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ===== MODAL AJOUT ===== -->
+<div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter une Complexité</h2>
+    <form method="POST" action="{{ url_for('complexite.ajouter_complexite') }}">
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Libellé</label>
+        <select id="libelleAdd" name="libelle" required class="w-full border px-3 py-2 rounded">
+          <option value="">-- Sélectionner un libellé --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Type Libellé</label>
+        <select id="typeLibelleAdd" name="type_libelle" required class="w-full border px-3 py-2 rounded">
+          <option value="">-- Sélectionner un type --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Valeur Libellé</label>
+        <select id="valeurLibelleAdd" name="valeur_libelle" required class="w-full border px-3 py-2 rounded">
+          <option value="">-- Sélectionner une valeur --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Pondération</label>
+        <input type="number" name="ponderation" required class="w-full border px-3 py-2 rounded">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL EDIT ===== -->
+<div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier la Complexité</h2>
+    <form id="editForm" method="POST">
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Libellé</label>
+        <input type="text" id="editLibelle" name="libelle" readonly class="w-full border px-3 py-2 rounded bg-gray-100">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Type Libellé</label>
+        <select id="edittypeLibelle" name="type_libelle" required class="w-full border px-3 py-2 rounded">
+          <option value="">-- Sélectionner un type --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Valeur Libellé</label>
+        <select id="editValeurLibelle" name="valeur_libelle" required class="w-full border px-3 py-2 rounded">
+          <option value="">-- Sélectionner une valeur --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Pondération</label>
+        <input type="number" id="editPonderation" name="ponderation" required class="w-full border px-3 py-2 rounded">
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Mettre à jour</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ---------- FONCTIONS MODALS ----------
+function openAddModal() {
+  const modal = document.getElementById("addModal");
+  const content = document.getElementById("addModalContent");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    content.classList.remove("scale-95","opacity-0");
+    content.classList.add("scale-100","opacity-100");
+  }, 10);
+}
+function closeAddModal() {
+  const modal = document.getElementById("addModal");
+  const content = document.getElementById("addModalContent");
+  content.classList.remove("scale-100","opacity-100");
+  content.classList.add("scale-95","opacity-0");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+}
+
+function openEditModal(id, libelle, typeLibelle, valeurLibelle, ponderation) {
+
+  document.getElementById("editLibelle").value = libelle || '';
+  document.getElementById("editPonderation").value = ponderation || '';
+  document.getElementById("editForm").action = "/complexite/modifier/" + id;
+
+  const typeSelect = document.getElementById("edittypeLibelle");
+  const valeurSelect = document.getElementById("editValeurLibelle");
+
+
+  typeSelect.innerHTML = '<option value="">Chargement...</option>';
+  valeurSelect.innerHTML = '<option value="">-- Sélectionner une valeur --</option>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  fetch(`/complexite/get_types/${encodeURIComponent(libelle || '')}`)
+    .then(r => r.json())
+    .then(data => {
+      typeSelect.innerHTML = '<option value="">-- Sélectionner un type --</option>';
+      (data.types || []).forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        if (t === (typeLibelle || '')) opt.selected = true;
+        typeSelect.appendChild(opt);
+      });
+
+
+      if (typeLibelle) {
+        fetch(`/complexite/get_valeurs/${encodeURIComponent(libelle || '')}/${encodeURIComponent(typeLibelle || '')}`)
+          .then(r => r.json())
+          .then(vdata => {
+            valeurSelect.innerHTML = '<option value="">-- Sélectionner une valeur --</option>';
+            (vdata.valeurs || []).forEach(v => {
+              const opt = document.createElement('option');
+              opt.value = v;
+              opt.textContent = v;
+              if (v === (valeurLibelle || '')) opt.selected = true;
+              valeurSelect.appendChild(opt);
+            });
+          })
+
+          .catch(err => console.error('Erreur chargement valeurs:', err));
+
+
+      }
+    })
+
+    .catch(err => console.error('Erreur chargement types:', err));
+
+
+
+  const modal = document.getElementById("editModal");
+  const content = document.getElementById("editModalContent");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    content.classList.remove("scale-95","opacity-0");
+    content.classList.add("scale-100","opacity-100");
+  }, 10);
+}
+
+function closeEditModal() {
+  const modal = document.getElementById("editModal");
+  const content = document.getElementById("editModalContent");
+  content.classList.remove("scale-100","opacity-100");
+  content.classList.add("scale-95","opacity-0");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+}
+
+
+// ---------- DÉPENDANCES ADD + EDIT ----------
+document.addEventListener('DOMContentLoaded', () => {
+  const libelleAdd = document.getElementById('libelleAdd');
+  const typeLibelleAdd = document.getElementById('typeLibelleAdd');
+  const valeurLibelleAdd = document.getElementById('valeurLibelleAdd');
+
+  // Charger libellés pour ADD
+  fetch("/complexite/get_libelles")
+    .then(r => r.json())
+    .then(data => {
+      libelleAdd.innerHTML = '<option value="">-- Sélectionner un libellé --</option>';
+      (data.libelles || []).forEach(lib => {
+        const opt = document.createElement("option");
+        opt.value = lib;
+        opt.textContent = lib;
+        libelleAdd.appendChild(opt);
+      });
+    })
+    .catch(err => console.error("Erreur chargement libellés:", err));
+
+  // libellé -> types
+  libelleAdd.addEventListener('change', () => {
+    const libelle = libelleAdd.value.trim();
+    typeLibelleAdd.innerHTML = '<option value="">Chargement...</option>';
+    valeurLibelleAdd.innerHTML = '<option value="">-- Sélectionner une valeur --</option>';
+
+
+
+
+
+
+
+
+
+
+
+    if (!libelle) {
+
+
+      typeLibelleAdd.innerHTML = '<option value="">-- Sélectionner un type --</option>';
+      return;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    fetch(`/complexite/get_types/${encodeURIComponent(libelle)}`)
+      .then(r => r.json())
+      .then(data => {
+        typeLibelleAdd.innerHTML = '<option value="">-- Sélectionner un type --</option>';
+        (data.types || []).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          typeLibelleAdd.appendChild(opt);
+
+
+
+
+
+        });
+      })
+      .catch(err => console.error('Erreur chargement types (add):', err));
+  });
+
+  // type -> valeurs
+  typeLibelleAdd.addEventListener('change', () => {
+    const libelle = (libelleAdd.value || '').trim();
+    const type = typeLibelleAdd.value;
+    valeurLibelleAdd.innerHTML = '<option value="">Chargement...</option>';
+
+
+
+    if (!libelle || !type) {
+      valeurLibelleAdd.innerHTML = '<option value="">-- Sélectionner une valeur --</option>';
+      return;
+    }
+
+
+
+
+
+
+    fetch(`/complexite/get_valeurs/${encodeURIComponent(libelle)}/${encodeURIComponent(type)}`)
+      .then(r => r.json())
+      .then(data => {
+        valeurLibelleAdd.innerHTML = '<option value="">-- Sélectionner une valeur --</option>';
+        (data.valeurs || []).forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = v;
+          valeurLibelleAdd.appendChild(opt);
+
+
+
+
+
+        });
+      })
+      .catch(err => console.error('Erreur chargement valeurs (add):', err));
+  });
+});
+</script>
+{% endblock %}
