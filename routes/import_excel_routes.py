@@ -201,6 +201,6 @@ def import_excel():
         else:
             flash(f"✅ Import terminé : {inserted_count} projets insérés.", "success")
 
-        return redirect(url_for("projet.liste_projets"))
+        return redirect(url_for("projet.liste_demandes"))
 
     return render_template("import_excel.html")

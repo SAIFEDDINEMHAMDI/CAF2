@@ -20,12 +20,12 @@
         🔍 Rechercher
       </button>
 
-      <label class="flex items-center gap-2 text-sm text-gray-700">
+    <!--  <label class="flex items-center gap-2 text-sm text-gray-700">
         <input type="checkbox" name="incomplets" value="1"
                onchange="this.form.submit()"
                {% if incomplets %}checked{% endif %}>
         Afficher seulement les incomplets
-      </label>
+      </label>-->
     </div>
 
     <!-- 📤 Bouton Importer Excel (à droite)
@@ -42,10 +42,11 @@
     <table class="min-w-full bg-white divide-y divide-gray-200">
       <thead class="bg-gray-100">
         <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Titre</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">ID</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Titre</th>
           <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Programme</th>
           <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Domaine</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Catégorie</th>
+          <!--<th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Catégorie</th>-->
           <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Statut</th>
           <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Score Complexité</th>
           <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Estimation (JH)</th>
@@ -57,10 +58,11 @@
       <tbody class="divide-y divide-gray-200">
         {% for p in projets %}
         <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-sm text-gray-800">{{ p.id }}</td>
           <td class="px-6 py-4 text-sm text-gray-800">{{ p.titre }}</td>
           <td class="px-6 py-4 text-sm text-gray-700">{{ p.programme }}</td>
           <td class="px-6 py-4 text-sm text-gray-700">{{ p.domaine }}</td>
-          <td class="px-6 py-4 text-sm text-gray-700">{{ p.categorie }}</td>
+        <!--  <td class="px-6 py-4 text-sm text-gray-700">{{ p.categorie }}</td>-->
           <td class="px-6 py-4 text-sm text-gray-700">{{ p.statut }}</td>
           <td class="px-6 py-4 text-center text-sm font-semibold text-blue-700">{{ p.score_complexite or 0 }}</td>
           <td class="px-6 py-4 text-center text-sm font-semibold text-green-700">{{ p.estimation_jh or 0 }}</td>

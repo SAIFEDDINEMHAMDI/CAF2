@@ -133,7 +133,7 @@ def login():
                 }
 
                 flash("✅ Connexion réussie", "success")
-                return redirect(url_for('priorites'))
+                return redirect(url_for('projet.liste_demandes'))
             else:
                 flash("❌ Nom d'utilisateur ou mot de passe incorrect", "danger")
         else:

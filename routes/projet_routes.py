@@ -1,6 +1,7 @@
 # ==========================================
 # routes/projet_routes.py
 # ==========================================
+import sqlite3
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from utils.db_utils import query_db, get_db
@@ -45,7 +46,7 @@ def liste_projets():
         args.extend([f"%{search}%", f"%{search}%"])
 
     if incomplets:
-        base_query += " AND (p.id_programme IS NULL OR p.id_domaine IS NULL OR p.id_categorie IS NULL)"
+        base_query += " AND (p.id_programme IS NULL OR p.id_domaine IS NULL)"
 
     total = query_db(f"SELECT COUNT(*) as count FROM ({base_query})", args, one=True)["count"]
     projets = query_db(f"{base_query} ORDER BY p.id DESC LIMIT ? OFFSET ?", args + [per_page, offset])
@@ -553,9 +554,7 @@ def phases_programme(programme_id):
 # ==========================================
 # Affectations des collaborateurs
 # ==========================================
-# ==========================================
-# Affectations des collaborateurs (dans la page Modifier Projet)
-# ==========================================
+
 
 @projet_bp.route("/<int:projet_id>/ajouter_collaborateur", methods=["POST"])
 def ajouter_collaborateur_projet(projet_id):
@@ -821,14 +820,33 @@ def update_all_complexites_demande(projet_id):
     return redirect(url_for("projet.modifier_demande", projet_id=projet_id))
 
 
-@projet_bp.route("/supprimer_demande/<projet_id>", methods=["POST"])
+@projet_bp.route("/supprimer_demande/<int:projet_id>", methods=["POST"])
 def supprimer_demande(projet_id):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("DELETE FROM Projet WHERE id = ?", [projet_id])
-    conn.commit()
-    flash("🗑️ Projet supprimé avec succès.", "success")
-    return redirect(url_for("projet.liste_demande"))
+
+    try:
+        # Supprimer d’abord les dépendances
+
+        cur.execute("DELETE FROM complexite_projet WHERE id_projet = ?", [projet_id])
+
+        # Puis le projet lui-même
+        cur.execute("DELETE FROM Projet WHERE id = ?", [projet_id])
+        conn.commit()
+        flash("✅ Projet supprimé avec succès.", "success")
+
+    except sqlite3.IntegrityError:
+        flash("❌ Impossible de supprimer : le projet est encore référencé dans d'autres tables.", "error")
+
+    except Exception as e:
+        flash(f"⚠️ Erreur inattendue : {e}", "error")
+
+    finally:
+        conn.close()
+
+    return redirect(url_for("projet.liste_demandes"))
+
+
 
 @projet_bp.route("/get_valeurs_complexite", methods=["POST"])
 def get_valeurs_complexite():

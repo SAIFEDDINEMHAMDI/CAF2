@@ -32,14 +32,12 @@
     <h2 class="text-2xl font-semibold text-blue-600 mb-4">Informations générales</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- 🔸 Titre -->
       <div>
         <label class="block font-medium text-gray-700 mb-1">Titre</label>
         <input type="text" name="titre" value="{{ projet.titre_projet }}"
                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400">
       </div>
 
-      <!-- 🔸 Description -->
       <div>
         <label class="block font-medium text-gray-700 mb-1">Description</label>
         <textarea name="description" rows="2"
@@ -51,7 +49,7 @@
       <!-- 🔸 Programme -->
       <div>
         <label class="block font-medium text-gray-700 mb-1">Programme</label>
-        <select name="id_programme" onchange="loadPhasesProgramme()"
+        <select name="id_programme"
                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400">
           <option value="">-- Sélectionner un programme --</option>
           {% for prog in programmes %}
@@ -76,7 +74,7 @@
         </select>
       </div>
 
-      <!-- 🔸 Catégorie -->
+      <!-- 🔸 Catégorie
       <div>
         <label class="block font-medium text-gray-700 mb-1">Catégorie</label>
         <select name="id_categorie"
@@ -88,7 +86,7 @@
             </option>
           {% endfor %}
         </select>
-      </div>
+      </div> -->
 
       <!-- 🔸 Statut -->
       <div>
@@ -103,14 +101,14 @@
           {% endfor %}
         </select>
       </div>
-    </div>
-
-    <!-- 🔹 Date MEP -->
-    <div class="mt-6">
+        <div class="mt-6">
       <label class="block font-medium text-gray-700 mb-1">Date de mise en production (MEP)</label>
       <input type="date" name="date_mep" value="{{ projet.date_mep or '' }}"
              class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400">
     </div>
+    </div>
+
+
 
     <div class="mt-8">
       <button type="submit"
@@ -124,7 +122,7 @@
 
 
   <!-- =================================================== -->
-  <!-- 🔹 BLOC 2️⃣ : PHASES DU PROJET (editable) -->
+  <!-- 🔹 BLOC 2️⃣ : PHASES DU PROJET -->
   <!-- =================================================== -->
   <form method="POST" action="{{ url_for('projet.update_phases_dates', projet_id=projet.id) }}"
         class="bg-white shadow-md rounded-lg border border-gray-200 mt-10">
@@ -140,26 +138,23 @@
         </tr>
       </thead>
       <tbody id="phases-body">
-  {% if phases_projet and phases_projet|length > 0 %}
-    {% for p in phases_projet %}
-      <tr class="border-b hover:bg-gray-50 text-gray-800">
-        <td class="px-4 py-2 font-medium">{{ p.phase_nom }}</td>
-        <td class="px-4 py-2 text-center">{{ "%.0f"|format(p.poids or 0) }}%</td>
-        <td class="px-4 py-2 text-center">
-          <input type="date" name="date_debut_{{ p.id }}" value="{{ p.date_debut }}"
-                 class="border border-gray-300 rounded-lg px-2 py-1 focus:ring-blue-400 focus:border-blue-400">
-        </td>
-        <td class="px-4 py-2 text-center">
-          <input type="date" name="date_fin_{{ p.id }}" value="{{ p.date_fin }}"
-                 class="border border-gray-300 rounded-lg px-2 py-1 focus:ring-blue-400 focus:border-blue-400">
-        </td>
-      </tr>
-    {% endfor %}
-  {% else %}
-    <tr><td colspan="4" class="text-center text-gray-500 py-4 italic">Aucune phase trouvée.</td></tr>
-  {% endif %}
-</tbody>
-
+        {% if phases_projet %}
+          {% for p in phases_projet %}
+          <tr class="border-b hover:bg-gray-50 text-gray-800">
+            <td class="px-4 py-2 font-medium">{{ p.phase_nom }}</td>
+            <td class="px-4 py-2 text-center">{{ "%.0f"|format(p.poids or 0) }}%</td>
+            <td class="px-4 py-2 text-center">
+              <input type="date" name="date_debut_{{ p.id }}" value="{{ p.date_debut }}" class="border border-gray-300 rounded-lg px-2 py-1">
+            </td>
+            <td class="px-4 py-2 text-center">
+              <input type="date" name="date_fin_{{ p.id }}" value="{{ p.date_fin }}" class="border border-gray-300 rounded-lg px-2 py-1">
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4" class="text-center text-gray-500 py-4 italic">Aucune phase trouvée.</td></tr>
+        {% endif %}
+      </tbody>
     </table>
 
     <div class="px-6 pb-6">
@@ -225,243 +220,101 @@
     </div>
   </form>
 </div>
-<!--&lt;!&ndash; ===================================== &ndash;&gt;-->
-<!--&lt;!&ndash; 🔹 Bloc : Affectation des collaborateurs &ndash;&gt;-->
-<!--&lt;!&ndash; ===================================== &ndash;&gt;-->
-<!--<div class="bg-white shadow-md rounded-lg border border-gray-200 mt-10 p-6">-->
-<!--  <h2 class="text-2xl font-semibold text-blue-600 mb-6">Collaborateurs affectés</h2>-->
+{% endblock %}
 
-<!--  &lt;!&ndash; Bouton Ajouter &ndash;&gt;-->
-<!--  <div class="flex justify-end mb-4">-->
-<!--    <button onclick="openAddModal()"-->
-<!--            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">-->
-<!--      ➕ Ajouter un collaborateur-->
-<!--    </button>-->
-<!--  </div>-->
-
-<!--  &lt;!&ndash; Tableau collaborateurs &ndash;&gt;-->
-<!--  <table id="table-collaborateurs" class="min-w-full border border-gray-300 rounded-lg">-->
-<!--    <thead class="bg-blue-600 text-white">-->
-<!--      <tr>-->
-<!--        <th class="px-4 py-2 text-left">Collaborateur</th>-->
-<!--        <th class="px-4 py-2 text-left">Rôle</th>-->
-<!--        <th class="px-4 py-2 text-center">% Allocation</th>-->
-<!--        <th class="px-4 py-2 text-center">Actions</th>-->
-<!--      </tr>-->
-<!--    </thead>-->
-<!--    <tbody>-->
-<!--      {% for a in affectations %}-->
-<!--      <tr data-id="{{ a.id }}" class="hover:bg-gray-50">-->
-<!--        <td class="px-4 py-2">{{ a.collaborateur }}</td>-->
-<!--        <td class="px-4 py-2">-->
-<!--          <input type="text" class="border rounded px-2 py-1 w-full text-sm" value="{{ a.role }}">-->
-<!--        </td>-->
-<!--        <td class="px-4 py-2 text-center">-->
-<!--          <input type="number" class="border rounded px-2 py-1 w-20 text-center" min="0" max="100"-->
-<!--                 value="{{ a.pourcentage_allocation }}">-->
-<!--        </td>-->
-<!--        <td class="px-4 py-2 text-center">-->
-<!--          <button class="update-btn bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">💾</button>-->
-<!--          <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">🗑️</button>-->
-<!--        </td>-->
-<!--      </tr>-->
-<!--      {% else %}-->
-<!--      <tr><td colspan="4" class="text-center text-gray-500 py-4 italic">Aucun collaborateur affecté.</td></tr>-->
-<!--      {% endfor %}-->
-<!--    </tbody>-->
-<!--  </table>-->
-<!--</div>-->
-
-<!--&lt;!&ndash; 🔹 Modal ajout collaborateur &ndash;&gt;-->
-<!--<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">-->
-<!--  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">-->
-<!--    <h2 class="text-xl font-semibold text-blue-600 mb-4">Ajouter un collaborateur</h2>-->
-<!--    <form id="addCollabForm">-->
-<!--      <div class="mb-4">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">Collaborateur</label>-->
-<!--        <select name="collaborateur" required class="w-full border rounded-lg px-3 py-2">-->
-<!--          <option value="">&#45;&#45; Sélectionner &#45;&#45;</option>-->
-<!--          {% for c in collaborateurs %}-->
-<!--            <option value="{{ c.matricule }}">{{ c.nom_complet }}</option>-->
-<!--          {% endfor %}-->
-<!--        </select>-->
-<!--      </div>-->
-<!--      <div class="mb-4">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">Rôle</label>-->
-<!--        <input type="text" name="role" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Développeur">-->
-<!--      </div>-->
-<!--      <div class="mb-6">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">% Allocation</label>-->
-<!--        <input type="number" name="pourcentage" min="0" max="100" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: 50">-->
-<!--      </div>-->
-<!--      <div class="flex justify-end space-x-3">-->
-<!--        <button type="button" onclick="closeAddModal()" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Annuler</button>-->
-<!--        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter</button>-->
-<!--      </div>-->
-<!--    </form>-->
-<!--  </div>-->
-<!--</div>-->
-
+{% block scripts %}
 <script>
-// ============================
-// 🔹 Gestion du modal collaborateur
-// ============================
-function openAddModal() {
-  document.getElementById('addModal').classList.remove('hidden');
-}
-function closeAddModal() {
-  document.getElementById('addModal').classList.add('hidden');
-}
+document.addEventListener("DOMContentLoaded", () => {
 
-// ============================
-// 🔹 AJOUT D’UN COLLABORATEUR
-// ============================
-document.getElementById('addCollabForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
-  const projetId = {{ projet.id }};
-  const formData = new FormData(this);
+  // ============================
+  // 🔹 CHARGEMENT DYNAMIQUE DES PHASES DU PROGRAMME
+  // ============================
+  async function loadPhasesProgramme() {
+    const select = document.querySelector('select[name="id_programme"]');
+    const programmeId = select?.value;
+    const tbody = document.getElementById("phases-body");
+    if (!tbody) return;
 
-  const res = await fetch(`/projet/${projetId}/ajouter_collaborateur`, {
-    method: 'POST',
-    body: formData
-  });
-  const data = await res.json();
-
-  if (data.success) {
-    location.reload();
-  } else {
-    alert(data.message);
-  }
-});
-
-// ============================
-// 🔹 MODIFICATION D’UN COLLABORATEUR
-// ============================
-document.querySelectorAll('.update-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const row = btn.closest('tr');
-    const id = row.dataset.id;
-    const role = row.querySelector('input[type="text"]').value;
-    const pourcentage = row.querySelector('input[type="number"]').value;
-
-    const formData = new FormData();
-    formData.append('role', role);
-    formData.append('pourcentage', pourcentage);
-
-    const res = await fetch(`/projet/modifier_collaborateur/${id}`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      btn.classList.add('bg-green-700');
-      setTimeout(() => btn.classList.remove('bg-green-700'), 600);
-    } else {
-      alert(data.message);
-    }
-  });
-});
-
-// ============================
-// 🔹 SUPPRESSION D’UN COLLABORATEUR
-// ============================
-document.querySelectorAll('.delete-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    if (!confirm('Supprimer ce collaborateur ?')) return;
-    const row = btn.closest('tr');
-    const id = row.dataset.id;
-
-    const res = await fetch(`/projet/supprimer_collaborateur/${id}`, { method: 'POST' });
-    const data = await res.json();
-
-    if (data.success) row.remove();
-    else alert(data.message);
-  });
-});
-
-// ============================
-// 🔹 MISE À JOUR DES VALEURS DE COMPLEXITÉ
-// ============================
-async function updateComplexite(index) {
-  const typeSelect = document.getElementById(`type_c${index}`);
-  const valeurSelect = document.getElementById(`valeur_c${index}`);
-  const libelle = typeSelect.closest("tr").querySelector("td").textContent.trim();
-  const type_libelle = typeSelect.value;
-
-  if (!type_libelle) {
-    valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-    return;
-  }
-
-  try {
-    const res = await fetch("/projet/get_valeurs_complexite", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ libelle, type_libelle })
-    });
-    const data = await res.json();
-
-    valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-    data.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.id;
-      opt.textContent = item.valeur_libelle;
-      valeurSelect.appendChild(opt);
-    });
-  } catch (err) {
-    console.error("Erreur AJAX updateComplexite:", err);
-  }
-}
-
-// ============================
-// 🔹 CHARGEMENT DYNAMIQUE DES PHASES DU PROGRAMME
-// ============================
-window.loadPhasesProgramme = async function () {
-  const select = document.querySelector('select[name="id_programme"]');
-  const programmeId = select.value;
-
-  const tbody = document.getElementById("phases-body");
-  tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4 italic">
-    Chargement des phases...
-  </td></tr>`;
-
-  if (!programmeId) {
     tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4 italic">
-      Aucune phase — veuillez choisir un programme.
+      Chargement des phases...
     </td></tr>`;
-    return;
-  }
 
-  try {
-    const res = await fetch(`/projet/phases_programme/${programmeId}?projet_id={{ projet.id }}`);
-    const data = await res.json();
-
-    if (!data.success) {
-      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-yellow-600 py-4 font-semibold">
-        ${data.message}
+    if (!programmeId) {
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4 italic">
+        Aucune phase — veuillez choisir un programme.
       </td></tr>`;
       return;
     }
 
-    tbody.innerHTML = "";
-    data.phases.forEach(p => {
-      tbody.innerHTML += `
-        <tr class="border-b hover:bg-gray-50 text-gray-800">
-          <td class="px-4 py-2 font-medium">${p.phase_nom}</td>
-          <td class="px-4 py-2 text-center">${p.poids}%</td>
-          <td class="px-4 py-2 text-center"><input type="date" value="${p.date_debut}" /></td>
-          <td class="px-4 py-2 text-center"><input type="date" value="${p.date_fin}" /></td>
-        </tr>`;
-    });
-  } catch (err) {
-    console.error("Erreur JS loadPhasesProgramme:", err);
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4 italic">
-      Erreur lors du chargement des phases.
-    </td></tr>`;
+    try {
+      const res = await fetch(`/projet/phases_programme/${programmeId}?projet_id={{ projet.id }}`);
+      const data = await res.json();
+      if (!data.success) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-yellow-600 py-4 font-semibold">
+          ${data.message}
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = "";
+      data.phases.forEach(p => {
+        tbody.insertAdjacentHTML("beforeend", `
+          <tr class="border-b hover:bg-gray-50 text-gray-800">
+            <td class="px-4 py-2 font-medium">${p.phase_nom}</td>
+            <td class="px-4 py-2 text-center">${p.poids}%</td>
+            <td class="px-4 py-2 text-center"><input type="date" value="${p.date_debut}" class="border border-gray-300 rounded-lg px-2 py-1"></td>
+            <td class="px-4 py-2 text-center"><input type="date" value="${p.date_fin}" class="border border-gray-300 rounded-lg px-2 py-1"></td>
+          </tr>
+        `);
+      });
+    } catch (err) {
+      console.error("Erreur JS loadPhasesProgramme:", err);
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4 italic">
+        Erreur lors du chargement des phases.
+      </td></tr>`;
+    }
   }
-};
+
+  // ✅ Attacher l’événement sur le select
+  const select = document.querySelector('select[name="id_programme"]');
+  if (select) {
+    select.addEventListener("change", loadPhasesProgramme);
+    if (select.value) loadPhasesProgramme();
+  }
+
+  // ============================
+  // 🔹 MISE À JOUR DES VALEURS DE COMPLEXITÉ
+  // ============================
+  window.updateComplexite = async function(index) {
+    const typeSelect = document.getElementById(`type_c${index}`);
+    const valeurSelect = document.getElementById(`valeur_c${index}`);
+    const libelle = typeSelect.closest("tr").querySelector("td").textContent.trim();
+    const type_libelle = typeSelect.value;
+
+    if (!type_libelle) {
+      valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+      return;
+    }
+
+    try {
+      const res = await fetch("/projet/get_valeurs_complexite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ libelle, type_libelle })
+      });
+      const data = await res.json();
+
+      valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+      data.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.valeur_libelle;
+        valeurSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error("Erreur AJAX updateComplexite:", err);
+    }
+  };
+});
 </script>
-
-
 {% endblock %}
