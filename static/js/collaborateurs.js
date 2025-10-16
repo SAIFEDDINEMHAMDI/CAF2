@@ -4,6 +4,7 @@
 window.openAddModal = function () {
   const m = document.getElementById("addModal"), c = document.getElementById("addModalContent");
   m.classList.remove("hidden");
+  m.classList.add("flex", "items-center", "justify-center");
   setTimeout(() => {
     c.classList.remove("scale-95", "opacity-0");
     c.classList.add("scale-100", "opacity-100");
@@ -32,6 +33,7 @@ window.openEditModal = function (matricule, nom, prenom, profil_id, affectation_
   loadRepartitions(matricule);
 
   m.classList.remove("hidden");
+  m.classList.add("flex", "items-center", "justify-center");
   setTimeout(() => {
     c.classList.remove("scale-95", "opacity-0");
     c.classList.add("scale-100", "opacity-100");

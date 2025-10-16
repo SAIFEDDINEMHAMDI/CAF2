@@ -147,13 +147,7 @@
 </div>
 
 <!-- JS (inchangé) -->
-<script>
-function openAddModal(){const m=document.getElementById("addModal"),c=document.getElementById("addModalContent");if(!m||!c)return;m.classList.remove("hidden");m.classList.add("flex");setTimeout(()=>{c.classList.remove("scale-95","opacity-0");c.classList.add("scale-100","opacity-100");},10);}
-function closeAddModal(){const m=document.getElementById("addModal"),c=document.getElementById("addModalContent");if(!m||!c)return;c.classList.remove("scale-100","opacity-100");c.classList.add("scale-95","opacity-0");setTimeout(()=>{m.classList.add("hidden");m.classList.remove("flex");},150);}
-function openEditModal(matricule,nom,prenom,profil_id,affectation_id,p_build,p_run,heures_base){const m=document.getElementById("editModal"),c=document.getElementById("editModalContent");if(!m||!c)return;m.classList.remove("hidden");m.classList.add("flex");setTimeout(()=>{c.classList.remove("scale-95","opacity-0");c.classList.add("scale-100","opacity-100");},10);const form=document.getElementById("editForm");if(form){form.action="{{ url_for('collaborateurs.modifier_collaborateur', matricule='') }}"+matricule;["matricule","nom","prenom","profil_id","affectation_id","pourcentage_build","pourcentage_run","heures_base"].forEach((n,i)=>{const el=form.querySelector(`[name='${n}']`);if(el)el.value=arguments[i];});}}
-function closeEditModal(){const m=document.getElementById("editModal"),c=document.getElementById("editModalContent");if(!m||!c)return;c.classList.remove("scale-100","opacity-100");c.classList.add("scale-95","opacity-0");setTimeout(()=>{m.classList.add("hidden");m.classList.remove("flex");},150);}
-</script>
-
+<script src="{{ url_for('static', filename='js/collaborateurs.js') }}" defer></script>
 <!-- Footer -->
 <style>
 footer {
