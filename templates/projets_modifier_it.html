@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-8 py-10">
-  <h1 class="text-3xl font-bold mb-6 text-blue-600">Modifier le Projet</h1>
+  <h1 class="text-3xl font-bold mb-6 text-blue-600">Modifier le Projet IT</h1>
 
   <!-- ============================= -->
   <!-- AFFICHAGE DES MESSAGES FLASH -->
@@ -77,7 +77,7 @@
 
 
   <div class="mt-8">
-    <a href="{{ url_for('projet.liste_projets') }}"
+    <a href="{{ url_for('demande_it.liste_projets_it') }}"
        class="text-blue-600 hover:underline">← Retour à la liste</a>
   </div>
 </div>
@@ -87,7 +87,7 @@
   <!-- =================================================== -->
   <!-- 🔹 BLOC 2️⃣ : PHASES DU PROJET (editable) -->
   <!-- =================================================== -->
-  <form method="POST" action="{{ url_for('projet.update_phases_dates', projet_id=projet.id) }}"
+  <form method="POST" action="{{ url_for('demande_it.update_phases_dates_it', projet_id=projet.id) }}"
         class="bg-white shadow-md rounded-lg border border-gray-200 mt-10">
     <h2 class="text-2xl font-semibold text-blue-600 px-6 pt-6 mb-4">Phases du projet</h2>
 
@@ -132,164 +132,9 @@
   </form>
 
 
-
-<!--&lt;!&ndash; ===================================== &ndash;&gt;-->
-<!--&lt;!&ndash; 🔹 Bloc : Affectation des collaborateurs &ndash;&gt;-->
-<!--&lt;!&ndash; ===================================== &ndash;&gt;-->
-<!--<div class="bg-white shadow-md rounded-lg border border-gray-200 mt-10 p-6">-->
-<!--  <h2 class="text-2xl font-semibold text-blue-600 mb-6">Collaborateurs affectés</h2>-->
-
-<!--  &lt;!&ndash; Bouton Ajouter &ndash;&gt;-->
-<!--  <div class="flex justify-end mb-4">-->
-<!--    <button onclick="openAddModal()"-->
-<!--            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">-->
-<!--      ➕ Ajouter un collaborateur-->
-<!--    </button>-->
-<!--  </div>-->
-
-<!--  &lt;!&ndash; Tableau collaborateurs &ndash;&gt;-->
-<!--  <table id="table-collaborateurs" class="min-w-full border border-gray-300 rounded-lg">-->
-<!--    <thead class="bg-blue-600 text-white">-->
-<!--      <tr>-->
-<!--        <th class="px-4 py-2 text-left">Collaborateur</th>-->
-<!--        <th class="px-4 py-2 text-left">Rôle</th>-->
-<!--        <th class="px-4 py-2 text-center">% Allocation</th>-->
-<!--        <th class="px-4 py-2 text-center">Actions</th>-->
-<!--      </tr>-->
-<!--    </thead>-->
-<!--    <tbody>-->
-<!--      {% for a in affectations %}-->
-<!--      <tr data-id="{{ a.id }}" class="hover:bg-gray-50">-->
-<!--        <td class="px-4 py-2">{{ a.collaborateur }}</td>-->
-<!--        <td class="px-4 py-2">-->
-<!--          <input type="text" class="border rounded px-2 py-1 w-full text-sm" value="{{ a.role }}">-->
-<!--        </td>-->
-<!--        <td class="px-4 py-2 text-center">-->
-<!--          <input type="number" class="border rounded px-2 py-1 w-20 text-center" min="0" max="100"-->
-<!--                 value="{{ a.pourcentage_allocation }}">-->
-<!--        </td>-->
-<!--        <td class="px-4 py-2 text-center">-->
-<!--          <button class="update-btn bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">💾</button>-->
-<!--          <button class="delete-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">🗑️</button>-->
-<!--        </td>-->
-<!--      </tr>-->
-<!--      {% else %}-->
-<!--      <tr><td colspan="4" class="text-center text-gray-500 py-4 italic">Aucun collaborateur affecté.</td></tr>-->
-<!--      {% endfor %}-->
-<!--    </tbody>-->
-<!--  </table>-->
-<!--</div>-->
-
-<!--&lt;!&ndash; 🔹 Modal ajout collaborateur &ndash;&gt;-->
-<!--<div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">-->
-<!--  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">-->
-<!--    <h2 class="text-xl font-semibold text-blue-600 mb-4">Ajouter un collaborateur</h2>-->
-<!--    <form id="addCollabForm">-->
-<!--      <div class="mb-4">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">Collaborateur</label>-->
-<!--        <select name="collaborateur" required class="w-full border rounded-lg px-3 py-2">-->
-<!--          <option value="">&#45;&#45; Sélectionner &#45;&#45;</option>-->
-<!--          {% for c in collaborateurs %}-->
-<!--            <option value="{{ c.matricule }}">{{ c.nom_complet }}</option>-->
-<!--          {% endfor %}-->
-<!--        </select>-->
-<!--      </div>-->
-<!--      <div class="mb-4">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">Rôle</label>-->
-<!--        <input type="text" name="role" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Développeur">-->
-<!--      </div>-->
-<!--      <div class="mb-6">-->
-<!--        <label class="block font-medium text-gray-700 mb-1">% Allocation</label>-->
-<!--        <input type="number" name="pourcentage" min="0" max="100" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: 50">-->
-<!--      </div>-->
-<!--      <div class="flex justify-end space-x-3">-->
-<!--        <button type="button" onclick="closeAddModal()" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Annuler</button>-->
-<!--        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter</button>-->
-<!--      </div>-->
-<!--    </form>-->
-<!--  </div>-->
-<!--</div>-->
 {% endblock %}
 {% block scripts %}
 <script>
-<!--// ============================-->
-<!--// 🔹 Gestion du modal collaborateur-->
-<!--// ============================-->
-<!--function openAddModal() {-->
-<!--  document.getElementById('addModal').classList.remove('hidden');-->
-<!--}-->
-<!--function closeAddModal() {-->
-<!--  document.getElementById('addModal').classList.add('hidden');-->
-<!--}-->
-
-<!--// ============================-->
-<!--// 🔹 AJOUT D’UN COLLABORATEUR-->
-<!--// ============================-->
-<!--document.getElementById('addCollabForm').addEventListener('submit', async function (e) {-->
-<!--  e.preventDefault();-->
-<!--  const projetId = {{ projet.id }};-->
-<!--  const formData = new FormData(this);-->
-
-<!--  const res = await fetch(`/projet/${projetId}/ajouter_collaborateur`, {-->
-<!--    method: 'POST',-->
-<!--    body: formData-->
-<!--  });-->
-<!--  const data = await res.json();-->
-
-<!--  if (data.success) {-->
-<!--    location.reload();-->
-<!--  } else {-->
-<!--    alert(data.message);-->
-<!--  }-->
-<!--});-->
-
-<!--// ============================-->
-<!--// 🔹 MODIFICATION D’UN COLLABORATEUR-->
-<!--// ============================-->
-<!--document.querySelectorAll('.update-btn').forEach(btn => {-->
-<!--  btn.addEventListener('click', async () => {-->
-<!--    const row = btn.closest('tr');-->
-<!--    const id = row.dataset.id;-->
-<!--    const role = row.querySelector('input[type="text"]').value;-->
-<!--    const pourcentage = row.querySelector('input[type="number"]').value;-->
-
-<!--    const formData = new FormData();-->
-<!--    formData.append('role', role);-->
-<!--    formData.append('pourcentage', pourcentage);-->
-
-<!--    const res = await fetch(`/projet/modifier_collaborateur/${id}`, {-->
-<!--      method: 'POST',-->
-<!--      body: formData-->
-<!--    });-->
-<!--    const data = await res.json();-->
-
-<!--    if (data.success) {-->
-<!--      btn.classList.add('bg-green-700');-->
-<!--      setTimeout(() => btn.classList.remove('bg-green-700'), 600);-->
-<!--    } else {-->
-<!--      alert(data.message);-->
-<!--    }-->
-<!--  });-->
-<!--});-->
-
-<!--// ============================-->
-<!--// 🔹 SUPPRESSION D’UN COLLABORATEUR-->
-<!--// ============================-->
-<!--document.querySelectorAll('.delete-btn').forEach(btn => {-->
-<!--  btn.addEventListener('click', async () => {-->
-<!--    if (!confirm('Supprimer ce collaborateur ?')) return;-->
-<!--    const row = btn.closest('tr');-->
-<!--    const id = row.dataset.id;-->
-
-<!--    const res = await fetch(`/projet/supprimer_collaborateur/${id}`, { method: 'POST' });-->
-<!--    const data = await res.json();-->
-
-<!--    if (data.success) row.remove();-->
-<!--    else alert(data.message);-->
-<!--  });-->
-<!--});-->
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
   // ============================
@@ -313,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const res = await fetch(`/projet/phases_programme/${programmeId}?projet_id={{ projet.id }}`);
+      const res = await fetch(`/demande_it/phases_programme_it/${programmeId}?projet_id={{ projet.id }}`);
       const data = await res.json();
 
       if (!data.success) {

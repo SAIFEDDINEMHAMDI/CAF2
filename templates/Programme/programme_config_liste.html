@@ -23,6 +23,7 @@
       <thead class="bg-blue-600 text-white">
         <tr>
           <th class="py-2 px-4 text-left">Nom</th>
+             <th class="py-2 px-4 text-left">Type du programme</th>
           <th class="py-2 px-4 text-center">Actions</th>
         </tr>
       </thead>
@@ -30,6 +31,7 @@
         {% for p in programmes %}
         <tr class="border-t hover:bg-gray-50">
           <td class="py-3 px-4">{{ p.nom }}</td>
+            <td class="py-3 px-4">{{ p.type }}</td>
           <td class="py-3 px-4 text-center space-x-3">
             <button onclick="openPhasesModal({{ p.id }}, '{{ p.nom }}')" class="text-indigo-600 hover:text-indigo-800">⚙️ Phases</button>
             <button onclick="openProfilsModal({{ p.id }}, '{{ p.nom }}')" class="text-green-600 hover:text-green-800">👥 Profils</button>
@@ -50,25 +52,63 @@
       </tbody>
     </table>
   </div>
+    {% if total_pages > 1 %}
+<div class="flex justify-center items-center mt-6 gap-2">
+  {% if page > 1 %}
+    <a href="?page={{ page - 1 }}{% if q %}&q={{ q }}{% endif %}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">← Précédent</a>
+  {% endif %}
+
+  <span class="px-3 py-1 text-gray-700">
+    Page {{ page }} / {{ total_pages }}
+  </span>
+
+  {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}{% if q %}&q={{ q }}{% endif %}"
+       class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Suivant →</a>
+  {% endif %}
+</div>
+{% endif %}
 </div>
 
 <!-- ✅ MODALE AJOUT PROGRAMME -->
+<!-- ====================================================== -->
+<!-- 🧩 MODAL AJOUT PROGRAMME -->
+<!-- ====================================================== -->
 <div id="addModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
   <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
     <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un Programme</h2>
+
     <form method="POST" action="{{ url_for('programme_config.ajouter_programme') }}">
+
+      <!-- 🔹 Nom du programme -->
       <div class="mb-4">
         <label class="block font-medium mb-1">Nom</label>
         <input name="nom" required placeholder="Nom du programme"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2">
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400">
       </div>
-      <div class="flex justify-end gap-2">
+
+      <!-- 🔹 Type du programme -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Type du programme</label>
+        <select name="type" required
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-400 focus:border-blue-400">
+          <option value="">-- Sélectionner un type --</option>
+          <option value="Build">Build</option>
+          <option value="IT FOR IT">IT FOR IT</option>
+        </select>
+      </div>
+
+      <!-- 🔹 Boutons -->
+      <div class="flex justify-end gap-2 mt-6">
         <button type="button" onclick="closeAddModal()" class="px-4 py-2 bg-gray-200 rounded">Annuler</button>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Ajouter</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter</button>
       </div>
+
     </form>
   </div>
 </div>
+
 
 <!-- 🔹 MODALES (Phases / Profils / Projets) -->
 {% include 'Programme/modales_programmes.html' %}

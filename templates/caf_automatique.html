@@ -47,6 +47,15 @@
     </form>
   </div>
 
+  <!-- ✅ Indication dynamique -->
+  <div class="mb-4 text-gray-600 text-sm">
+    {% if mois_filtre != 'all' %}
+      🔹 Affichage des totaux pour <strong>{{ mois_filtre }} {{ annee }}</strong>
+    {% else %}
+      🔹 Affichage des totaux pour <strong>l'année {{ annee }}</strong>
+    {% endif %}
+  </div>
+
   <!-- Tableau -->
   <div id="caf-container" class="overflow-x-auto overflow-y-hidden shadow-lg rounded-lg border border-gray-200">
     <table id="caf-table" class="min-w-full bg-white divide-y divide-gray-200 text-xs sm:text-sm">
@@ -56,23 +65,42 @@
           {% for s in semaines_affichees %}
             <th class="px-3 py-3 text-center font-semibold whitespace-nowrap">{{ s }}</th>
           {% endfor %}
+          <!-- 🔹 Titre dynamique : "Total Annuel" ou "Total {{ mois_filtre }}" -->
+          <th class="px-4 py-3 text-center font-semibold bg-gray-50">
+            {% if mois_filtre != 'all' %}
+              Total {{ mois_filtre }}
+            {% else %}
+              Total Annuel
+            {% endif %}
+          </th>
         </tr>
+
         <tr class="bg-gray-50 text-[11px] text-gray-500">
           <th class="px-4 py-2 text-left font-medium"></th>
           {% for s in semaines_affichees %}
             <th class="px-3 py-2 text-center font-medium whitespace-nowrap">{{ semaine_to_mois[s] }}</th>
           {% endfor %}
+          <th class="px-4 py-2 text-center font-medium text-gray-600">—</th>
         </tr>
       </thead>
+
       <tbody class="divide-y divide-gray-200">
         {% for row in data %}
-        <tr class="hover:bg-gray-50 transition">
+        <tr class="hover:bg-gray-50 transition {% if 'TOTAL' in row.profil %}bg-blue-50 font-semibold{% endif %}">
           <td class="px-4 py-3 font-medium text-gray-800">
-            {{ row.profil }} <span class="text-gray-500 text-xs">({{ row.nb_collab }} pers.)</span>
+            {{ row.profil }}
+            {% if row.nb_collab != '-' %}
+              <span class="text-gray-500 text-xs">({{ row.nb_collab }} pers.)</span>
+            {% endif %}
           </td>
+
           {% for s in semaines_affichees %}
           <td class="px-3 py-3 text-center text-gray-700 whitespace-nowrap">{{ row[s] }} JH</td>
           {% endfor %}
+
+          <td class="px-4 py-3 text-center font-semibold text-blue-700 whitespace-nowrap">
+            {{ row.total_annuel }} JH
+          </td>
         </tr>
         {% endfor %}
       </tbody>

@@ -170,59 +170,59 @@ def ajouter_collaborateur():
         _now(), _get_user()
     ])
 
-    # ==============================
-    # Répartitions secondaires
-    # ==============================
-    rep_profils = request.form.getlist("rep_profil_id[]")
-    rep_builds  = request.form.getlist("rep_build[]")
-    rep_runs    = request.form.getlist("rep_run[]")
-
-    collab = query_db("""
-        SELECT caf_disponible_build, caf_disponible_run
-        FROM collaborateurs
-        WHERE matricule = ?
-    """, [matricule], one=True)
-
-    caf_collab_build = float(collab["caf_disponible_build"]) if collab else 0
-    caf_collab_run   = float(collab["caf_disponible_run"]) if collab else 0
-
-    total_build, total_run = 0, 0
-    rows_to_insert = []
-
-    for i in range(len(rep_profils)):
-        try:
-            rep_pid = int(str(rep_profils[i]).strip() or 0)
-            rb = _sanitize_percentage(rep_builds[i] if i < len(rep_builds) else 0, 0)
-            rr = _sanitize_percentage(rep_runs[i]  if i < len(rep_runs)  else 0, 0)
-
-            if not rep_pid:
-                continue
-
-            caf_build_rep = (rb / 100.0) * caf_collab_build
-            caf_run_rep   = (rr / 100.0) * caf_collab_run
-
-            total_build += caf_build_rep
-            total_run   += caf_run_rep
-
-            rows_to_insert.append((matricule, rep_pid, rb, rr, caf_build_rep, caf_run_rep))
-        except Exception as e:
-            print(f"[ERREUR] Répartition ignorée : {e}")
-
-    # 🔹 Vérification de la somme des CAF
-    if total_build > caf_collab_build or total_run > caf_collab_run:
-        flash(f"⚠️ Somme des CAF secondaires ({total_build:.2f} / {total_run:.2f}) "
-              f"dépasse les CAF disponibles du collaborateur "
-              f"({caf_collab_build:.2f} / {caf_collab_run:.2f}).", "warning")
-        return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-    # ✅ Insertion finale
-    for row in rows_to_insert:
-        execute_db("""
-            INSERT INTO collaborateur_repartition (
-                collaborateur_id, profil_id, pourcentage_build, pourcentage_run,
-                caf_disponible_build, caf_disponible_run
-            ) VALUES (?, ?, ?, ?, ?, ?)
-        """, row)
+    # # ==============================
+    # # Répartitions secondaires
+    # # ==============================
+    # rep_profils = request.form.getlist("rep_profil_id[]")
+    # rep_builds  = request.form.getlist("rep_build[]")
+    # rep_runs    = request.form.getlist("rep_run[]")
+    #
+    # collab = query_db("""
+    #     SELECT caf_disponible_build, caf_disponible_run
+    #     FROM collaborateurs
+    #     WHERE matricule = ?
+    # """, [matricule], one=True)
+    #
+    # caf_collab_build = float(collab["caf_disponible_build"]) if collab else 0
+    # caf_collab_run   = float(collab["caf_disponible_run"]) if collab else 0
+    #
+    # total_build, total_run = 0, 0
+    # rows_to_insert = []
+    #
+    # for i in range(len(rep_profils)):
+    #     try:
+    #         rep_pid = int(str(rep_profils[i]).strip() or 0)
+    #         rb = _sanitize_percentage(rep_builds[i] if i < len(rep_builds) else 0, 0)
+    #         rr = _sanitize_percentage(rep_runs[i]  if i < len(rep_runs)  else 0, 0)
+    #
+    #         if not rep_pid:
+    #             continue
+    #
+    #         caf_build_rep = (rb / 100.0) * caf_collab_build
+    #         caf_run_rep   = (rr / 100.0) * caf_collab_run
+    #
+    #         total_build += caf_build_rep
+    #         total_run   += caf_run_rep
+    #
+    #         rows_to_insert.append((matricule, rep_pid, rb, rr, caf_build_rep, caf_run_rep))
+    #     except Exception as e:
+    #         print(f"[ERREUR] Répartition ignorée : {e}")
+    #
+    # # 🔹 Vérification de la somme des CAF
+    # if total_build > caf_collab_build or total_run > caf_collab_run:
+    #     flash(f"⚠️ Somme des CAF secondaires ({total_build:.2f} / {total_run:.2f}) "
+    #           f"dépasse les CAF disponibles du collaborateur "
+    #           f"({caf_collab_build:.2f} / {caf_collab_run:.2f}).", "warning")
+    #     return redirect(url_for('collaborateurs.liste_collaborateurs'))
+    #
+    # # ✅ Insertion finale
+    # for row in rows_to_insert:
+    #     execute_db("""
+    #         INSERT INTO collaborateur_repartition (
+    #             collaborateur_id, profil_id, pourcentage_build, pourcentage_run,
+    #             caf_disponible_build, caf_disponible_run
+    #         ) VALUES (?, ?, ?, ?, ?, ?)
+    #     """, row)
 
     flash("✅ Collaborateur et répartitions ajoutés avec succès", "success")
     return redirect(url_for('collaborateurs.liste_collaborateurs'))
@@ -262,51 +262,51 @@ def modifier_collaborateur(matricule):
         float(caf_build), float(caf_run),
         _now(), _get_user(), matricule
     ])
+    #
+    # # Répartitions secondaires
+    # rep_profils = request.form.getlist("rep_profil_id[]")
+    # rep_builds  = request.form.getlist("rep_build[]")
+    # rep_runs    = request.form.getlist("rep_run[]")
+    #
+    # execute_db("DELETE FROM collaborateur_repartition WHERE collaborateur_id = ?", [matricule])
+    #
+    # total_build, total_run = 0, 0
+    # rows_to_insert = []
+    #
+    # for i in range(len(rep_profils)):
+    #     try:
+    #         rep_pid = int(str(rep_profils[i]).strip() or 0)
+    #         rb = _sanitize_percentage(rep_builds[i] if i < len(rep_builds) else 0, 0)
+    #         rr = _sanitize_percentage(rep_runs[i]  if i < len(rep_runs)  else 0, 0)
+    #
+    #         if not rep_pid:
+    #             continue
+    #
+    #         caf_build_rep = (rb / 100.0) * caf_build
+    #         caf_run_rep   = (rr / 100.0) * caf_run
+    #
+    #         total_build += caf_build_rep
+    #         total_run   += caf_run_rep
+    #
+    #         rows_to_insert.append((matricule, rep_pid, rb, rr, caf_build_rep, caf_run_rep))
+    #     except Exception as e:
+    #         print(f"[ERREUR] Répartition ignorée : {e}")
+    #
+    # if total_build > caf_build or total_run > caf_run:
+    #     flash(f"⚠️ Somme des CAF secondaires ({total_build:.2f} / {total_run:.2f}) "
+    #           f"dépasse les CAF du collaborateur "
+    #           f"({caf_build:.2f} / {caf_run:.2f}).", "warning")
+    #     return redirect(url_for('collaborateurs.liste_collaborateurs'))
+    #
+    # for row in rows_to_insert:
+    #     execute_db("""
+    #         INSERT INTO collaborateur_repartition (
+    #             collaborateur_id, profil_id, pourcentage_build, pourcentage_run,
+    #             caf_disponible_build, caf_disponible_run
+    #         ) VALUES (?, ?, ?, ?, ?, ?)
+    #     """, row)
 
-    # Répartitions secondaires
-    rep_profils = request.form.getlist("rep_profil_id[]")
-    rep_builds  = request.form.getlist("rep_build[]")
-    rep_runs    = request.form.getlist("rep_run[]")
-
-    execute_db("DELETE FROM collaborateur_repartition WHERE collaborateur_id = ?", [matricule])
-
-    total_build, total_run = 0, 0
-    rows_to_insert = []
-
-    for i in range(len(rep_profils)):
-        try:
-            rep_pid = int(str(rep_profils[i]).strip() or 0)
-            rb = _sanitize_percentage(rep_builds[i] if i < len(rep_builds) else 0, 0)
-            rr = _sanitize_percentage(rep_runs[i]  if i < len(rep_runs)  else 0, 0)
-
-            if not rep_pid:
-                continue
-
-            caf_build_rep = (rb / 100.0) * caf_build
-            caf_run_rep   = (rr / 100.0) * caf_run
-
-            total_build += caf_build_rep
-            total_run   += caf_run_rep
-
-            rows_to_insert.append((matricule, rep_pid, rb, rr, caf_build_rep, caf_run_rep))
-        except Exception as e:
-            print(f"[ERREUR] Répartition ignorée : {e}")
-
-    if total_build > caf_build or total_run > caf_run:
-        flash(f"⚠️ Somme des CAF secondaires ({total_build:.2f} / {total_run:.2f}) "
-              f"dépasse les CAF du collaborateur "
-              f"({caf_build:.2f} / {caf_run:.2f}).", "warning")
-        return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-    for row in rows_to_insert:
-        execute_db("""
-            INSERT INTO collaborateur_repartition (
-                collaborateur_id, profil_id, pourcentage_build, pourcentage_run,
-                caf_disponible_build, caf_disponible_run
-            ) VALUES (?, ?, ?, ?, ?, ?)
-        """, row)
-
-    flash("✅ Collaborateur et répartitions mises à jour avec succès", "success")
+    flash("✅ Collaborateur  mis à jour avec succès", "success")
     return redirect(url_for('collaborateurs.liste_collaborateurs'))
 
 
@@ -316,148 +316,148 @@ def modifier_collaborateur(matricule):
 # ================================================================
 # 🔹 API : récupérer les répartitions secondaires d’un collaborateur
 # ================================================================
-@collab_bp.route('/repartition/get/<matricule>')
-def get_repartitions_collaborateur(matricule):
-    data = query_db("""
-        SELECT cr.id, cr.profil_id, p.nom AS profil_nom,
-               cr.pourcentage_build, cr.pourcentage_run,
-               cr.caf_disponible_build, cr.caf_disponible_run
-        FROM collaborateur_repartition cr
-        LEFT JOIN profils p ON p.id = cr.profil_id
-        WHERE CAST(cr.collaborateur_id AS TEXT) = ?
-        ORDER BY cr.id
-    """, [str(matricule)])
-    return {"repartitions": [dict(r) for r in data]}
+# @collab_bp.route('/repartition/get/<matricule>')
+# def get_repartitions_collaborateur(matricule):
+#     data = query_db("""
+#         SELECT cr.id, cr.profil_id, p.nom AS profil_nom,
+#                cr.pourcentage_build, cr.pourcentage_run,
+#                cr.caf_disponible_build, cr.caf_disponible_run
+#         FROM collaborateur_repartition cr
+#         LEFT JOIN profils p ON p.id = cr.profil_id
+#         WHERE CAST(cr.collaborateur_id AS TEXT) = ?
+#         ORDER BY cr.id
+#     """, [str(matricule)])
+#     return {"repartitions": [dict(r) for r in data]}
 
 
 # ================================================================
-# 🔹 AJOUTER / METTRE À JOUR UNE RÉPARTITION SECONDAIRE
-# ================================================================
-@collab_bp.route('/repartition/ajouter/<matricule>', methods=['POST'])
-@readonly_if_user
-def ajouter_repartition(matricule):
-    try:
-        profil_id = request.form.get("profil_id") or request.form.get("rep_profil_id")
-        p_build = request.form.get("pourcentage_build") or request.form.get("rep_build")
-        p_run = request.form.get("pourcentage_run") or request.form.get("rep_run")
-
-        if not profil_id or not p_build or not p_run:
-            flash("⚠️ Tous les champs sont requis (profil, %Build, %Run).", "warning")
-            return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-        profil_id = int(profil_id)
-        p_build = _sanitize_percentage(p_build, 0)
-        p_run = _sanitize_percentage(p_run, 0)
-
-        # 🔹 Récupérer les CAF du collaborateur principal
-        collab = query_db("""
-            SELECT caf_disponible_build, caf_disponible_run
-            FROM collaborateurs
-            WHERE matricule = ?
-        """, [matricule], one=True)
-
-        if not collab:
-            flash("❌ Collaborateur introuvable.", "danger")
-            return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-        caf_collab_build = float(collab["caf_disponible_build"]) if collab else 0
-        caf_collab_run   = float(collab["caf_disponible_run"]) if collab else 0
-
-        # 🔹 Calcul CAF de cette répartition
-        caf_build_rep = (p_build / 100.0) * caf_collab_build
-        caf_run_rep   = (p_run / 100.0) * caf_collab_run
-
-        # 🔹 Vérifier si la répartition existe déjà pour ce profil
-        existing = query_db("""
-            SELECT id FROM collaborateur_repartition
-            WHERE collaborateur_id = ? AND profil_id = ?
-        """, [matricule, profil_id], one=True)
-
-        if existing:
-            # 🔁 Mettre à jour si déjà existante
-            execute_db("""
-                UPDATE collaborateur_repartition
-                SET pourcentage_build = ?, pourcentage_run = ?,
-                    caf_disponible_build = ?, caf_disponible_run = ?
-                WHERE id = ?
-            """, [p_build, p_run, caf_build_rep, caf_run_rep, existing["id"]])
-            flash("♻️ Répartition mise à jour avec succès.", "success")
-        else:
-            # ➕ Sinon insérer une nouvelle
-            execute_db("""
-                INSERT INTO collaborateur_repartition (
-                    collaborateur_id, profil_id,
-                    pourcentage_build, pourcentage_run,
-                    caf_disponible_build, caf_disponible_run
-                ) VALUES (?, ?, ?, ?, ?, ?)
-            """, [matricule, profil_id, p_build, p_run, caf_build_rep, caf_run_rep])
-            flash("✅ Nouvelle répartition ajoutée avec succès.", "success")
-
-    except Exception as e:
-        print(f"[ERREUR] Ajout/MàJ répartition : {e}")
-        flash(f"❌ Erreur lors de la gestion de la répartition : {e}", "danger")
-
-    return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-
-# ================================================================
-# 🔹 MODIFIER UNE RÉPARTITION SECONDAIRE
-# ================================================================
-@collab_bp.route('/repartition/modifier/<int:id>', methods=['POST'])
-@readonly_if_user
-def modifier_repartition(id):
-    try:
-        p_build = _sanitize_percentage(request.form.get('pourcentage_build', 0))
-        p_run = _sanitize_percentage(request.form.get('pourcentage_run', 0))
-
-        rep = query_db("""
-            SELECT cr.id, c.matricule, c.heures_base 
-            FROM collaborateur_repartition cr
-            JOIN collaborateurs c ON cr.collaborateur_id = c.matricule
-            WHERE cr.id = ?
-        """, [id], one=True)
-
-        if not rep:
-            flash("❌ Répartition introuvable", "danger")
-            return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-        heures_base = rep['heures_base'] or 0
-
-        execute_db("""
-            UPDATE collaborateur_repartition
-            SET pourcentage_build = ?, pourcentage_run = ?,
-                caf_disponible_build = ?, caf_disponible_run = ?
-            WHERE id = ?
-        """, [
-            p_build, p_run,
-            (p_build / 100.0) * heures_base,
-            (p_run / 100.0) * heures_base,
-            id
-        ])
-
-        flash("♻️ Répartition mise à jour avec succès", "success")
-    except Exception as e:
-        print(f"[ERREUR] Modifier répartition : {e}")
-        flash(f"❌ Erreur lors de la modification de la répartition : {e}", "danger")
-
-    return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
-
-# ================================================================
-# 🔹 SUPPRIMER UNE RÉPARTITION SECONDAIRE
-# ================================================================
-@collab_bp.route('/repartition/supprimer/<int:id>', methods=['POST'])
-@readonly_if_user
-def supprimer_repartition(id):
-    try:
-        execute_db("DELETE FROM collaborateur_repartition WHERE id = ?", [id])
-        flash("🗑️ Répartition supprimée avec succès.", "success")
-    except Exception as e:
-        print(f"[ERREUR] Suppression répartition : {e}")
-        flash(f"❌ Erreur lors de la suppression : {e}", "danger")
-
-    return redirect(url_for('collaborateurs.liste_collaborateurs'))
-
+# # 🔹 AJOUTER / METTRE À JOUR UNE RÉPARTITION SECONDAIRE
+# # ================================================================
+# @collab_bp.route('/repartition/ajouter/<matricule>', methods=['POST'])
+# @readonly_if_user
+# def ajouter_repartition(matricule):
+#     try:
+#         profil_id = request.form.get("profil_id") or request.form.get("rep_profil_id")
+#         p_build = request.form.get("pourcentage_build") or request.form.get("rep_build")
+#         p_run = request.form.get("pourcentage_run") or request.form.get("rep_run")
+#
+#         if not profil_id or not p_build or not p_run:
+#             flash("⚠️ Tous les champs sont requis (profil, %Build, %Run).", "warning")
+#             return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
+#         profil_id = int(profil_id)
+#         p_build = _sanitize_percentage(p_build, 0)
+#         p_run = _sanitize_percentage(p_run, 0)
+#
+#         # 🔹 Récupérer les CAF du collaborateur principal
+#         collab = query_db("""
+#             SELECT caf_disponible_build, caf_disponible_run
+#             FROM collaborateurs
+#             WHERE matricule = ?
+#         """, [matricule], one=True)
+#
+#         if not collab:
+#             flash("❌ Collaborateur introuvable.", "danger")
+#             return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
+#         caf_collab_build = float(collab["caf_disponible_build"]) if collab else 0
+#         caf_collab_run   = float(collab["caf_disponible_run"]) if collab else 0
+#
+#         # 🔹 Calcul CAF de cette répartition
+#         caf_build_rep = (p_build / 100.0) * caf_collab_build
+#         caf_run_rep   = (p_run / 100.0) * caf_collab_run
+#
+#         # 🔹 Vérifier si la répartition existe déjà pour ce profil
+#         existing = query_db("""
+#             SELECT id FROM collaborateur_repartition
+#             WHERE collaborateur_id = ? AND profil_id = ?
+#         """, [matricule, profil_id], one=True)
+#
+#         if existing:
+#             # 🔁 Mettre à jour si déjà existante
+#             execute_db("""
+#                 UPDATE collaborateur_repartition
+#                 SET pourcentage_build = ?, pourcentage_run = ?,
+#                     caf_disponible_build = ?, caf_disponible_run = ?
+#                 WHERE id = ?
+#             """, [p_build, p_run, caf_build_rep, caf_run_rep, existing["id"]])
+#             flash("♻️ Répartition mise à jour avec succès.", "success")
+#         else:
+#             # ➕ Sinon insérer une nouvelle
+#             execute_db("""
+#                 INSERT INTO collaborateur_repartition (
+#                     collaborateur_id, profil_id,
+#                     pourcentage_build, pourcentage_run,
+#                     caf_disponible_build, caf_disponible_run
+#                 ) VALUES (?, ?, ?, ?, ?, ?)
+#             """, [matricule, profil_id, p_build, p_run, caf_build_rep, caf_run_rep])
+#             flash("✅ Nouvelle répartition ajoutée avec succès.", "success")
+#
+#     except Exception as e:
+#         print(f"[ERREUR] Ajout/MàJ répartition : {e}")
+#         flash(f"❌ Erreur lors de la gestion de la répartition : {e}", "danger")
+#
+#     return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
+#
+# # ================================================================
+# # 🔹 MODIFIER UNE RÉPARTITION SECONDAIRE
+# # ================================================================
+# @collab_bp.route('/repartition/modifier/<int:id>', methods=['POST'])
+# @readonly_if_user
+# def modifier_repartition(id):
+#     try:
+#         p_build = _sanitize_percentage(request.form.get('pourcentage_build', 0))
+#         p_run = _sanitize_percentage(request.form.get('pourcentage_run', 0))
+#
+#         rep = query_db("""
+#             SELECT cr.id, c.matricule, c.heures_base
+#             FROM collaborateur_repartition cr
+#             JOIN collaborateurs c ON cr.collaborateur_id = c.matricule
+#             WHERE cr.id = ?
+#         """, [id], one=True)
+#
+#         if not rep:
+#             flash("❌ Répartition introuvable", "danger")
+#             return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
+#         heures_base = rep['heures_base'] or 0
+#
+#         execute_db("""
+#             UPDATE collaborateur_repartition
+#             SET pourcentage_build = ?, pourcentage_run = ?,
+#                 caf_disponible_build = ?, caf_disponible_run = ?
+#             WHERE id = ?
+#         """, [
+#             p_build, p_run,
+#             (p_build / 100.0) * heures_base,
+#             (p_run / 100.0) * heures_base,
+#             id
+#         ])
+#
+#         flash("♻️ Répartition mise à jour avec succès", "success")
+#     except Exception as e:
+#         print(f"[ERREUR] Modifier répartition : {e}")
+#         flash(f"❌ Erreur lors de la modification de la répartition : {e}", "danger")
+#
+#     return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
+#
+# # ================================================================
+# # 🔹 SUPPRIMER UNE RÉPARTITION SECONDAIRE
+# # ================================================================
+# @collab_bp.route('/repartition/supprimer/<int:id>', methods=['POST'])
+# @readonly_if_user
+# def supprimer_repartition(id):
+#     try:
+#         execute_db("DELETE FROM collaborateur_repartition WHERE id = ?", [id])
+#         flash("🗑️ Répartition supprimée avec succès.", "success")
+#     except Exception as e:
+#         print(f"[ERREUR] Suppression répartition : {e}")
+#         flash(f"❌ Erreur lors de la suppression : {e}", "danger")
+#
+#     return redirect(url_for('collaborateurs.liste_collaborateurs'))
+#
 
 
 @collab_bp.route('/import-excel', methods=['POST'])

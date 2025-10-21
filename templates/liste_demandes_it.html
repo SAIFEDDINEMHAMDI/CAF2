@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Liste des demandes{% endblock %}
+{% block title %}Liste des demandes IT{% endblock %}
 
 {% block content %}
 <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-  <h1 class="text-3xl font-bold mb-8 text-blue-600 text-center md:text-left">Liste des demandes importées</h1>
+  <h1 class="text-3xl font-bold mb-8 text-blue-600 text-center md:text-left">Liste des demandes importées IT</h1>
 
   <!-- 🔹 Barre de recherche / filtres -->
-  <form method="get" action="{{ url_for('projet.liste_demandes') }}"
+  <form method="get" action="{{ url_for('demande_it.liste_demandes_it') }}"
         class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
     <div class="flex flex-wrap items-center gap-3">
@@ -60,10 +60,12 @@
           <th class="px-6 py-4 text-left font-semibold text-gray-700 w-64">Titre</th>
           <th class="px-6 py-4 text-left font-semibold text-gray-700 w-56">Programme</th>
           <th class="px-6 py-4 text-left font-semibold text-gray-700 w-56">Domaine</th>
-         <!-- <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Statut</th>-->
           <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Score Complexité</th>
           <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Estimation (JH)</th>
           <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Date MEP</th>
+            <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Score WSJF</th>
+                      <th class="px-6 py-4 text-left font-semibold text-gray-700 w-40">Priorité</th>
+
           <th class="px-6 py-4 text-center font-semibold text-gray-700 w-40">Retenue</th>
           <th class="px-6 py-4 text-center font-semibold text-gray-700 w-32">Actions</th>
         </tr>
@@ -80,7 +82,8 @@
           <td class="px-6 py-5 text-center font-semibold text-blue-700">{{ p.score_complexite or 0 }}</td>
           <td class="px-6 py-5 text-center font-semibold text-green-700">{{ p.estimation_jh or 0 }}</td>
           <td class="px-6 py-5 text-gray-700">{{ p.date_mep or '-' }}</td>
-
+            <td class="px-6 py-5 text-gray-700">{{ p.score_wsjf or '-' }}</td>
+            <td class="px-6 py-5 text-gray-700">{{ p.priority or '-' }}</td>
           <td class="px-6 py-5 text-center">
             {% if p.retenue is none %}
               <span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
@@ -99,7 +102,7 @@
 
           <td class="px-6 py-5 text-center">
             <div class="flex items-center justify-center gap-3">
-              <a href="{{ url_for('projet.modifier_demande', projet_id=p.id) }}"
+              <a href="{{ url_for('demande_it.modifier_demande_it', projet_id=p.id) }}"
                  class="inline-flex items-center justify-center p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
                  title="Modifier">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -108,7 +111,7 @@
                 </svg>
               </a>
 
-              <form method="POST" action="{{ url_for('projet.supprimer_demande', projet_id=p.id) }}"
+              <form method="POST" action="{{ url_for('demande_it.supprimer_demande_it', projet_id=p.id) }}"
                     onsubmit="return confirm('Supprimer le projet {{ p.titre }} ?')">
                 <button type="submit"
                         class="inline-flex items-center justify-center p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition"
@@ -137,12 +140,12 @@
   <!-- 📄 Pagination -->
   <div class="flex justify-center items-center mt-6 gap-6">
     {% if page > 1 %}
-      <a href="{{ url_for('projet.liste_demandes', page=page-1, profil_id=profil_id, search=request.args.get('search','')) }}"
+      <a href="{{ url_for('demande_it.liste_demandes_it', page=page-1, profil_id=profil_id, search=request.args.get('search','')) }}"
          class="text-blue-600 hover:text-blue-800 text-lg">⬅️</a>
     {% endif %}
     <span class="text-gray-700 text-sm font-semibold">{{ page }}/{{ total_pages }}</span>
     {% if page < total_pages %}
-      <a href="{{ url_for('projet.liste_demandes', page=page+1, profil_id=profil_id, search=request.args.get('search','')) }}"
+      <a href="{{ url_for('demande_it.liste_demandes_it', page=page+1, profil_id=profil_id, search=request.args.get('search','')) }}"
          class="text-blue-600 hover:text-blue-800 text-lg">➡️</a>
     {% endif %}
   </div>
@@ -158,7 +161,7 @@
       <button onclick="closeImportModal()" class="text-gray-500 hover:text-gray-700 text-lg font-bold">×</button>
     </div>
 
-    <form method="POST" action="/import/" enctype="multipart/form-data">
+    <form method="POST" action="/import_excel_it/" enctype="multipart/form-data">
       <div class="mb-4">
         <label for="file" class="block text-gray-700 font-medium mb-2">
           Choisir un fichier Excel (.xls / .xlsx)

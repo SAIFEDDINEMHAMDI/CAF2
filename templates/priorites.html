@@ -48,24 +48,24 @@
 
           <!-- ✅ Bouton Retenu -->
           <td class="py-3 px-4 border-b text-center">
-            {% if session.user.role != 'user' %}
+<!--            {% if session.user.role != 'user' %}-->
               <form action="{{ url_for('toggle_retenu', projet_id=projet.id) }}" method="POST">
                 <button type="submit"
                         class="px-3 py-1 rounded-full {{ 'bg-green-100 text-green-700' if projet.retenu else 'bg-gray-100 text-gray-500' }} hover:opacity-80 transition">
                   {{ '✅ Oui' if projet.retenu else '❌ Non' }}
                 </button>
               </form>
-            {% else %}
-              <span class="px-3 py-1 rounded-full {{ 'bg-green-50 text-green-700' if projet.retenu else 'bg-gray-100 text-gray-500' }}">
-                {{ '✅ Oui' if projet.retenu else '❌ Non' }}
-              </span>
-            {% endif %}
+<!--            {% else %}-->
+<!--              <span class="px-3 py-1 rounded-full {{ 'bg-green-50 text-green-700' if projet.retenu else 'bg-gray-100 text-gray-500' }}">-->
+<!--                {{ '✅ Oui' if projet.retenu else '❌ Non' }}-->
+<!--              </span>-->
+<!--            {% endif %}-->
           </td>
 
           <!-- ✅ Bloc Actions -->
           <td class="py-3 px-4 border-b text-center">
             <div class="flex justify-center gap-3">
-              {% if session.user.role != 'user' %}
+<!--              {% if session.user.role != 'user' %}-->
                 <!-- Modifier -->
                 <a href="{{ url_for('projet.modifier_projet', projet_id=projet.id) }}"
                    class="p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600"
@@ -90,10 +90,10 @@
                     </svg>
                   </button>
                 </form>
-              {% else %}
-                <!-- 🔒 Icône grisée pour les users -->
-                <span class="text-gray-400 italic text-sm"></span>
-              {% endif %}
+<!--              {% else %}-->
+<!--                &lt;!&ndash; 🔒 Icône grisée pour les users &ndash;&gt;-->
+<!--                <span class="text-gray-400 italic text-sm"></span>-->
+<!--              {% endif %}-->
             </div>
           </td>
         </tr>

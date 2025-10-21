@@ -1,4 +1,4 @@
-{% set role = session.user.role if session.user is defined and session.user else None %}
+
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
@@ -78,7 +78,7 @@
 
                 <!-- ✅ Administration (visible uniquement pour admin et superadmin) -->
                 
-             {% if role in ['admin', 'superadmin'] %}
+
 <li>
     <button onclick="toggleAdminMenu()" class="w-full flex items-center justify-between p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition focus:outline-none">
         <span class="flex items-center space-x-3">
@@ -96,9 +96,10 @@
     </button>
 
     <ul id="admin-submenu" class="ml-8 mt-1 overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+         <li><a href="{{ url_for('valeurs_metier.liste_valeurs') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Coût de retard IT For IT</a></li>
         <li><a href="{{ url_for('complexite.liste_complexite') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Complexité</a></li>
-        <li><a href="{{ url_for('categorie.liste_categories') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Catégorie de projet</a></li>
-        <li><a href="{{ url_for('statut.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des projets</a></li>
+       <!-- <li><a href="{{ url_for('categorie.liste_categories') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Catégorie de projet</a></li>
+        <li><a href="{{ url_for('statut.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des projets</a></li>-->
                <li><a href="{{ url_for('statut_demande.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des Demandes</a></li>
 
         <li><a href="{{ url_for('phase.liste_phases') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Phase d'un programme</a></li>
@@ -111,7 +112,7 @@
 
     </ul>
 </li>
-{% endif %}
+
 
                 </li>
             
@@ -126,14 +127,14 @@
                     }
                 </script>
 
-                <!-- Menus communs à tous les rôles -->
+                <!-- Menus communs à tous les rôles
                 <li><a href="{{ url_for('priorites') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     <span>Prioriser par WSJF</span></a>
-                </li>
+                </li> -->
 
                 <li><a href="{{ url_for('caf.caf_automatique') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -216,12 +217,34 @@
                               d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
                     </svg>
                     <span>Liste des demandes</span></a></li>
+                <li><a href="{{ url_for('demande_it.liste_demandes_it') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Liste des demandes IT</span></a></li>
+                <li><a href="{{ url_for('demande_it.liste_projets_it') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Liste des projets IT</span></a></li>
                 <li><a href="{{ url_for('caf.caf_dashboard') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
                     </svg>
+
                     <span>Dashbord CAF</span></a></li>
+
+                    <li><a href="{{ url_for('projet.demandes_retenues') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V15a2 2 0 01-2 2z" />
+                    </svg>
+
+                    <span>Liste des demandes Chiffrés (à retenir)</span></a></li>
+
             </ul>
         </nav>
     </aside>

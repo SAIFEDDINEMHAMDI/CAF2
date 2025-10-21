@@ -102,19 +102,19 @@
     <form method="POST" action="{{ url_for('regles_complexite.ajouter_regle') }}">
       <div class="mb-3">
         <label class="block text-sm font-medium">Fibo</label>
-        <input type="number" name="fibo" required class="w-full border px-3 py-2 rounded">
+        <input type="number" name="fibo" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Score Min</label>
-        <input type="number" name="score_min" required class="w-full border px-3 py-2 rounded">
+        <input type="number" name="score_min" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Score Max</label>
-        <input type="number" name="score_max" required class="w-full border px-3 py-2 rounded">
+        <input type="number" name="score_max" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Valeur Base (JH)</label>
-        <input type="number" name="valeur_base" required class="w-full border px-3 py-2 rounded">
+        <input type="number" name="valeur_base" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="flex justify-end gap-2 mt-4">
         <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
@@ -131,15 +131,15 @@
     <form id="editForm" method="POST">
       <div class="mb-3">
         <label class="block text-sm font-medium">Fibo</label>
-        <input type="number" id="editFibo" name="fibo" required class="w-full border px-3 py-2 rounded">
+        <input type="number" id="editFibo" name="fibo" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Score Min</label>
-        <input type="number" id="editScoreMin" name="score_min" required class="w-full border px-3 py-2 rounded">
+        <input type="number" id="editScoreMin" name="score_min"  step="0.01"required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Score Max</label>
-        <input type="number" id="editScoreMax" name="score_max" required class="w-full border px-3 py-2 rounded">
+        <input type="number" id="editScoreMax" name="score_max" step="0.01" required class="w-full border px-3 py-2 rounded">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Valeur Base (JH)</label>

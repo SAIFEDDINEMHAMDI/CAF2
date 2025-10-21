@@ -13,7 +13,7 @@
              class="border border-gray-300 rounded px-3 py-2 text-sm w-72 focus:ring-blue-400 focus:border-blue-400">
     </form>
 
-    {% if user_role != 'user' %}
+
     <div class="flex items-center gap-3">
       <!-- ➕ Ajouter -->
       <button onclick="openAddModal()"
@@ -44,7 +44,7 @@
         Télécharger modèle
       </a>
     </div>
-    {% endif %}
+
   </div>
 
   <!-- 🔹 Tableau -->
@@ -56,9 +56,9 @@
           <th class="px-4 py-3 text-center font-semibold">Nb ETP</th>
           <th class="px-4 py-3 text-center font-semibold">Date Début</th>
           <th class="px-4 py-3 text-center font-semibold">Date Fin</th>
-          {% if user_role != 'user' %}
+
           <th class="px-4 py-3 text-center font-semibold">Actions</th>
-          {% endif %}
+
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -68,7 +68,7 @@
           <td class="px-4 py-3 text-center">{{ a.nb_etp }}</td>
           <td class="px-4 py-3 text-center">{{ a.date_debut }}</td>
           <td class="px-4 py-3 text-center">{{ a.date_fin }}</td>
-          {% if user_role != 'user' %}
+
           <td class="px-4 py-3 text-center">
             <div class="flex items-center justify-center gap-3">
               <!-- ✏️ Modifier -->
@@ -98,7 +98,7 @@
               </form>
             </div>
           </td>
-          {% endif %}
+
         </tr>
         {% else %}
         <tr><td colspan="5" class="text-center text-gray-500 py-4">Aucun accompagnement trouvé</td></tr>
@@ -121,7 +121,7 @@
   </div>
 </div>
 
-{% if user_role != 'user' %}
+
 <!-- 🔹 MODALE AJOUT -->
 <div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
@@ -222,5 +222,5 @@ function closeEditModal(){
   setTimeout(()=>m.classList.add("hidden"),200);
 }
 </script>
-{% endif %}
+
 {% endblock %}

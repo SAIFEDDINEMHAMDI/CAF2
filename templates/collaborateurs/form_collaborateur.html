@@ -58,44 +58,44 @@
     </div>
   </div>
 
-  <!-- =========================================== -->
-  <!-- 🔸 Répartitions secondaires (facultatif) -->
-  <!-- =========================================== -->
-  <div class="mt-6 border-t pt-4">
-    <h3 class="text-lg font-semibold text-gray-700 mb-3">Répartitions secondaires (facultatif)</h3>
+<!--  &lt;!&ndash; =========================================== &ndash;&gt;-->
+<!--  &lt;!&ndash; 🔸 Répartitions secondaires (facultatif) &ndash;&gt;-->
+<!--  &lt;!&ndash; =========================================== &ndash;&gt;-->
+<!--  <div class="mt-6 border-t pt-4">-->
+<!--    <h3 class="text-lg font-semibold text-gray-700 mb-3">Répartitions secondaires (facultatif)</h3>-->
 
-    <table class="min-w-full text-sm border rounded mb-3">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="px-3 py-2 text-left">Profil</th>
-          <th class="px-3 py-2 text-center">% Build</th>
-          <th class="px-3 py-2 text-center">% Run</th>
-          <th class="px-3 py-2 text-center">Action</th>
-        </tr>
-      </thead>
-      <tbody id="repartitionTableBody">
-        <tr class="text-gray-500 text-center">
-          <td colspan="4" class="py-2 italic">Aucune répartition ajoutée</td>
-        </tr>
-      </tbody>
-    </table>
+<!--    <table class="min-w-full text-sm border rounded mb-3">-->
+<!--      <thead class="bg-gray-100">-->
+<!--        <tr>-->
+<!--          <th class="px-3 py-2 text-left">Profil</th>-->
+<!--          <th class="px-3 py-2 text-center">% Build</th>-->
+<!--          <th class="px-3 py-2 text-center">% Run</th>-->
+<!--          <th class="px-3 py-2 text-center">Action</th>-->
+<!--        </tr>-->
+<!--      </thead>-->
+<!--      <tbody id="repartitionTableBody">-->
+<!--        <tr class="text-gray-500 text-center">-->
+<!--          <td colspan="4" class="py-2 italic">Aucune répartition ajoutée</td>-->
+<!--        </tr>-->
+<!--      </tbody>-->
+<!--    </table>-->
 
-    <!-- ➕ Ajouter une ligne -->
-    <div class="mt-3 grid grid-cols-4 gap-2 items-center">
-      <select id="repProfil" class="col-span-2 border rounded px-2 py-1 text-sm">
-        <option value="">-- Choisir un profil --</option>
-        {% for p in profils %}
-          <option value="{{ p.id }}">{{ p.nom }}</option>
-        {% endfor %}
-      </select>
-      <input id="repBuild" type="number" min="0" max="100" placeholder="% Build"
-             class="border rounded px-2 py-1 text-sm">
-      <input id="repRun" type="number" min="0" max="100" placeholder="% Run"
-             class="border rounded px-2 py-1 text-sm">
-      <button type="button" onclick="ajouterRepartitionTemp()"
-              class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-sm">➕ Ajouter</button>
-    </div>
-  </div>
+<!--    &lt;!&ndash; ➕ Ajouter une ligne &ndash;&gt;-->
+<!--    <div class="mt-3 grid grid-cols-4 gap-2 items-center">-->
+<!--      <select id="repProfil" class="col-span-2 border rounded px-2 py-1 text-sm">-->
+<!--        <option value="">&#45;&#45; Choisir un profil &#45;&#45;</option>-->
+<!--        {% for p in profils %}-->
+<!--          <option value="{{ p.id }}">{{ p.nom }}</option>-->
+<!--        {% endfor %}-->
+<!--      </select>-->
+<!--      <input id="repBuild" type="number" min="0" max="100" placeholder="% Build"-->
+<!--             class="border rounded px-2 py-1 text-sm">-->
+<!--      <input id="repRun" type="number" min="0" max="100" placeholder="% Run"-->
+<!--             class="border rounded px-2 py-1 text-sm">-->
+<!--      <button type="button" onclick="ajouterRepartitionTemp()"-->
+<!--              class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-sm">➕ Ajouter</button>-->
+<!--    </div>-->
+<!--  </div>-->
 
   <!-- ============================== -->
   <!-- ✅ Boutons -->

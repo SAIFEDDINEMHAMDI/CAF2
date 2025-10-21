@@ -17,16 +17,16 @@
       </button>
     </form>
 
-    {% if session.user.role != 'user' %}
+<!--    {% if session.user.role != 'user' %}-->
     <button onclick="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
       ➕ Ajouter un statut d'une demande
     </button>
-    {% else %}
-    <button disabled class="bg-gray-300 text-gray-600 px-5 py-2.5 rounded-full shadow cursor-not-allowed">
-      🔒 Lecture seule
-    </button>
-    {% endif %}
+<!--    {% else %}-->
+<!--    <button disabled class="bg-gray-300 text-gray-600 px-5 py-2.5 rounded-full shadow cursor-not-allowed">-->
+<!--      🔒 Lecture seule-->
+<!--    </button>-->
+<!--    {% endif %}-->
   </div>
 
   <!-- Tableau -->
@@ -44,7 +44,7 @@
         <tr class="hover:bg-gray-50 transition">
           <td class="px-6 py-4 text-sm text-gray-800">{{ s.nom }}</td>
           <td class="px-6 py-4 text-center">
-            {% if session.user.role != 'user' %}
+<!--            {% if session.user.role != 'user' %}-->
             <div class="flex items-center justify-center gap-3">
               <!-- Modifier -->
               <button type="button"
@@ -71,9 +71,9 @@
                 </button>
               </form>
             </div>
-            {% else %}
-            <span class="text-gray-400 italic text-sm">Lecture seule</span>
-            {% endif %}
+<!--            {% else %}-->
+<!--            <span class="text-gray-400 italic text-sm">Lecture seule</span>-->
+<!--            {% endif %}-->
           </td>
         </tr>
         {% else %}
@@ -87,7 +87,7 @@
 </div>
 
 <!-- ===== MODAL AJOUT ===== -->
-{% if session.user.role != 'user' %}
+<!--{% if session.user.role != 'user' %}-->
 <div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
     <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un Statut</h2>
@@ -104,10 +104,10 @@
     </form>
   </div>
 </div>
-{% endif %}
+<!--{% endif %}-->
 
 <!-- ===== MODAL EDIT ===== -->
-{% if session.user.role != 'user' %}
+<!--{% if session.user.role != 'user' %}-->
 <div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
     <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier le Statut</h2>
@@ -124,7 +124,7 @@
     </form>
   </div>
 </div>
-{% endif %}
+<!--{% endif %}-->
 
 <!-- ===== SCRIPTS ===== -->
 <script>
@@ -148,7 +148,7 @@ function closeAddModal() {
 
 function openEditModal(id, nom) {
   document.getElementById("editNom").value = nom || '';
-  document.getElementById("editForm").action = "/statut/modifier/" + id;
+  document.getElementById("editForm").action = "/statut_demande/modifier_statut_demande/" + id;
   const modal = document.getElementById("editModal");
   const content = document.getElementById("editModalContent");
   modal.classList.remove("hidden");

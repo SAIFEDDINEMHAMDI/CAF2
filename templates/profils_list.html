@@ -20,7 +20,7 @@
       </button>
     </form>
 
-    {% if session.user.role != 'user' %}
+<!--    {% if session.user.role != 'user' %}-->
     <button onclick="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,7 +28,7 @@
       </svg>
       Ajouter un profil
     </button>
-    {% endif %}
+<!--    {% endif %}-->
   </div>
 
   <!-- 🔹 Tableau -->
@@ -51,7 +51,7 @@
           <td class="px-6 py-4 text-sm text-gray-700">{{ p.run_ratio }}%</td>
           <td class="px-6 py-4 text-sm text-gray-700">{{ p.heures_base }}</td>
           <td class="px-6 py-4 text-center">
-            {% if session.user.role != 'user' %}
+<!--            {% if session.user.role != 'user' %}-->
             <div class="flex items-center justify-center gap-3">
               <!-- ✏️ Modifier -->
               <button type="button"
@@ -74,9 +74,9 @@
                 </button>
               </form>
             </div>
-            {% else %}
-            <span class="text-gray-400 italic text-sm">Lecture seule</span>
-            {% endif %}
+<!--            {% else %}-->
+<!--            <span class="text-gray-400 italic text-sm">Lecture seule</span>-->
+<!--            {% endif %}-->
           </td>
         </tr>
         {% else %}
@@ -104,7 +104,7 @@
   </div>
 </div>
 
-{% if session.user.role != 'user' %}
+<!--{% if session.user.role != 'user' %}-->
 <!-- 🔸 MODALE AJOUT -->
 <div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
@@ -149,7 +149,7 @@
     </form>
   </div>
 </div>
-{% endif %}
+<!--{% endif %}-->
 
 <!-- 🔸 MODALE MODIFICATION -->
 <div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">

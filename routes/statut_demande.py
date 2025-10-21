@@ -28,7 +28,7 @@ def liste_statuts():
 # ===============================
 # AJOUTER UN STATUT
 # ===============================
-@statut_demande_bp.route("/ajouter", methods=["POST"])
+@statut_demande_bp.route("/ajouter_statut_demande", methods=["POST"])
 def ajouter_statut():
     nom = request.form.get("nom")
     if not nom:
@@ -52,7 +52,7 @@ def ajouter_statut():
 # ===============================
 # MODIFIER UN STATUT
 # ===============================
-@statut_demande_bp.route("/modifier/<int:id>", methods=["POST"])
+@statut_demande_bp.route("/modifier_statut_demande/<int:id>", methods=["POST"])
 def modifier_statut(id):
     nom = request.form.get("nom")
     conn = get_db()
@@ -70,7 +70,7 @@ def modifier_statut(id):
 # ===============================
 # SUPPRIMER UN STATUT
 # ===============================
-@statut_demande_bp.route("/supprimer/<int:id>", methods=["POST"])
+@statut_demande_bp.route("/supprimer_statut_demande/<int:id>", methods=["POST"])
 def supprimer_statut(id):
     conn = get_db()
     cur = conn.cursor()

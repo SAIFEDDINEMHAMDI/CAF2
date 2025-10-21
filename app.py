@@ -29,6 +29,9 @@ from routes.regles_complexite_routes import regles_complexite_bp
 from routes.affectation_routes import affectation_bp
 from routes.accompagnement_routes import accompagnement_bp
 from routes.recrutement_routes import recrutement_bp
+from routes.valeurs_metier_routes import  valeurs_bp
+from routes.demande_it import demande_it_bp
+from routes.import_excel_it_routes import import_excel_it_bp
 # ----------------- CONFIGURATION -----------------
 load_dotenv()
 app = Flask(__name__)
@@ -53,6 +56,10 @@ app.register_blueprint(affectation_bp)
 app.register_blueprint(accompagnement_bp)
 app.register_blueprint(recrutement_bp)
 app.register_blueprint(statut_demande_bp)
+app.register_blueprint(valeurs_bp)
+app.register_blueprint(demande_it_bp)
+app.register_blueprint(import_excel_it_bp)
+
 # Gestion des uploads
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

@@ -1,10 +1,10 @@
-<!-- templates/valeur_metier_list.html 
+templates/valeur_metier_list.html
 {% extends "base.html" %}
-{% block title %}Valeurs métier{% endblock %}
+{% block title %}Coût de retard{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-6 py-8">
-  <h1 class="text-3xl font-bold mb-8 text-blue-600">Valeurs métier</h1>
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Coût de retard</h1>
 
   <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <form method="get" action="{{ url_for('valeurs_metier.liste_valeurs') }}" class="flex items-center gap-2">
@@ -19,7 +19,7 @@
 
     <button onclick="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg">
-      ➕ Ajouter une valeur métier
+      ➕ Ajouter un Coût de retard
     </button>
   </div>
 
@@ -78,7 +78,7 @@
 
 <div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
-    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter une Valeur Métier</h2>
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un Coût de retard</h2>
     <form method="POST" action="{{ url_for('valeurs_metier.ajouter_valeur') }}">
       <div class="mb-3">
   <label class="block text-sm font-medium">Libellé</label>
@@ -112,7 +112,7 @@
 
 <div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
-    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier la Valeur Métier</h2>
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier le Coût de retard</h2>
     <form id="editForm" method="POST">
       <div class="mb-3">
         <label class="block text-sm font-medium">Libellé</label>
@@ -347,4 +347,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
--->

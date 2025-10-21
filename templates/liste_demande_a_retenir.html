@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Liste des demandes Chiffrés{% endblock %}
+
+{% block content %}
+<!-- ========================================================== -->
+<!-- 🔹 TABLEAU : Demandes chiffrées - Modification du champ Retenue -->
+<!-- ========================================================== -->
+<div class="mt-12 bg-white shadow-lg rounded-lg border border-gray-200">
+  <h2 class="text-2xl font-semibold text-blue-600 px-6 py-4 border-b">
+    ⚙️ Gestion des demandes chiffrées
+  </h2>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white text-[15px] divide-y divide-gray-200">
+      <thead class="bg-blue-50">
+        <tr>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700">ID</th>
+          <th class="px-6 py-3 text-left font-semibold text-gray-700">Titre</th>
+ <th class="px-6 py-3 text-left font-semibold text-gray-700">Score Complexité</th>
+ <th class="px-6 py-3 text-left font-semibold text-gray-700">Estimation (JH)</th>
+          <th class="px-6 py-3 text-center font-semibold text-gray-700">Retenue</th>
+          <th class="px-6 py-3 text-center font-semibold text-gray-700">Action</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-gray-100">
+        {% for p in demandes %}
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-3 text-gray-800">{{ p.id }}</td>
+          <td class="px-6 py-3 text-gray-800">{{ p.titre }}</td>
+            <td class="px-6 py-3 text-gray-800">{{ p.score_complexite }}</td>
+            <td class="px-6 py-3 text-gray-800">{{ p.estimation_jh }}</td>
+          <td class="px-6 py-3 text-center">
+            {% if p.retenue == 1 %}
+              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Retenue</span>
+            {% else %}
+              <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700">Non retenue</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-center">
+            <form method="POST" action="{{ url_for('projet.toggle_retenue', projet_id=p.id) }}">
+  <button type="submit"
+          class="px-4 py-1.5 rounded-full text-white text-sm font-medium
+                 {% if p.retenue == 1 %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %}">
+    {% if p.retenue == 1 %}❌ Retirer{% else %}✅ Retenir{% endif %}
+  </button>
+</form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center py-6 text-gray-500 italic">
+            Aucune demande chiffrée trouvée.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

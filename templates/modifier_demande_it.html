@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-8 py-10">
-  <h1 class="text-3xl font-bold mb-6 text-blue-600">Modifier la demande</h1>
+  <h1 class="text-3xl font-bold mb-6 text-blue-600">Modifier la demande IT</h1>
 
   <!-- ============================= -->
   <!-- AFFICHAGE DES MESSAGES FLASH -->
@@ -120,15 +120,77 @@
               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-lg">
         💾 Enregistrer les informations
       </button>
-      <a href="{{ url_for('projet.liste_demandes') }}"
+      <a href="{{ url_for('demande_it.liste_demandes_it') }}"
          class="ml-4 text-blue-600 hover:underline">← Retour</a>
     </div>
   </form>
 
+<!-- ================================================== -->
+<!-- 🔹 BLOC : VALEURS MÉTIER-->
+<!-- ================================================== -->
+<form method="POST" action="{{ url_for('demande_it.update_all_valeurs_metier_it', projet_id=demande.id) }}"
+      class="bg-white shadow-md rounded-lg border border-gray-200 mb-10" id="form-valeurs">
+  <h2 class="text-2xl font-semibold text-blue-600 px-6 pt-6 mb-4">Valeurs métier</h2>
+
+  <table class="min-w-full border border-gray-300 rounded-lg mb-4">
+    <thead class="bg-blue-600 text-white">
+      <tr>
+        <th class="px-4 py-2 text-left w-1/3">Libellé</th>
+        <th class="px-4 py-2 text-left w-1/3">Type</th>
+        <th class="px-4 py-2 text-left w-1/3">Valeur</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for valeur in valeurs %}
+      <tr class="border-b hover:bg-gray-50">
+        <td class="px-4 py-2 font-medium text-gray-800">{{ valeur.libelle }}</td>
+
+        <!-- 🔹 TYPE -->
+        <td class="px-4 py-2">
+          <select id="type_{{ loop.index }}"
+                  name="type_{{ valeur.libelle }}"
+                  class="border border-gray-300 rounded-lg px-3 py-1 w-full"
+                  onchange="updateValeurs('{{ loop.index }}', '{{ valeur.libelle }}')">
+            <option value="">-- Sélectionner --</option>
+            {% for opt in dropdowns[valeur.libelle] | groupby('type_libelle') %}
+              <option value="{{ opt.grouper }}" {% if opt.grouper == valeur.type_libelle %}selected{% endif %}>
+                {{ opt.grouper }}
+              </option>
+            {% endfor %}
+          </select>
+        </td>
+
+        <!-- 🔹 VALEUR -->
+        <td class="px-4 py-2">
+          <select name="valeur_{{ valeur.libelle }}" id="valeur_{{ loop.index }}"
+                  class="border border-gray-300 rounded-lg px-3 py-1 w-full">
+            {% for option in dropdowns[valeur.libelle] if option.type_libelle == valeur.type_libelle %}
+              <option value="{{ option.id }}" {% if option.id == valeur.id_valeur_metier %}selected{% endif %}>
+                {{ option.valeur_libelle }}
+              </option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+<div class="px-6 py-4 bg-gray-50 border-t flex justify-between text-2xl text-gray-800 font-medium">
+  <div><strong>💡 Score total des valeurs métier :</strong> {{ demande.score_valeur_metier or 0 }}</div>
+</div>
+
+  <div class="px-6 pb-6 mt-4">
+    <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-lg">
+      💾 Enregistrer toutes les valeurs métier
+    </button>
+  </div>
+</form>
+
   <!-- =================================================== -->
   <!-- 🔹 BLOC 2️⃣ : COMPLEXITÉ DE LA DEMANDE -->
   <!-- =================================================== -->
-  <form method="POST" action="{{ url_for('projet.update_all_complexites_demande', projet_id=demande.id) }}"
+  <form method="POST" action="{{ url_for('demande_it.update_all_complexites_demande_it', projet_id=demande.id) }}"
         class="bg-white shadow-md rounded-lg border border-gray-200 mt-10" id="form-complexite">
     <h2 class="text-2xl font-semibold text-blue-600 px-6 pt-6 mb-4">Complexité de la demande</h2>
 
@@ -197,12 +259,12 @@
   </div>
 </div>
 
-
-<!-- ✅ AFFICHAGE SCORE ET JH ESTIMÉ -->
+    <!-- ✅ AFFICHAGE SCORE ET JH ESTIMÉ -->
 <div class="px-6 py-4 bg-gray-50 border-t flex justify-between text-2xl text-gray-800 font-medium">
   <div><strong>⚙️ Score de complexité :</strong> {{ demande.score_complexite or 0 }}</div>
   <div><strong>📊 JH estimé :</strong> {{ demande.estimation_jh or 0 }} JH</div>
 </div>
+
     <div class="px-6 pb-6 mt-4">
       <button type="submit"
               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-lg">
@@ -215,7 +277,7 @@
 {% block scripts %}
 <script defer>
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector('form[action*="update_all_complexites"]');
+  const form = document.querySelector('form[action*="update_all_complexites_demande_it"]');
   const modal = document.getElementById("modalPartial");
   const confirmBtn = document.getElementById("confirmPartial");
   const cancelBtn = document.getElementById("cancelPartial");
@@ -308,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  fetch("/projet/get_valeurs_complexite", {
+  fetch("/demande_it/get_valeurs_complexite_it", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ libelle: libelle, type_libelle: type_libelle })
@@ -325,6 +387,38 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     })
     .catch(err => console.error("Erreur AJAX:", err));
+}
+
+// === Valeurs métier ===
+function updateValeurs(index) {
+  const typeSelect = document.getElementById("type_" + index);
+  const valeurSelect = document.getElementById("valeur_" + index);
+  const libelle = valeurSelect.form.action.split("libelle=")[1]; // récupère le libellé dans l’URL
+  const type_libelle = typeSelect.value;
+  const selectedValue = valeurSelect.value;
+
+  if (!type_libelle) {
+    valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+    return;
+  }
+
+  fetch("/demande_it/get_valeurs_metier_it", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ libelle: decodeURIComponent(libelle), type_libelle })
+  })
+    .then(response => response.json())
+    .then(data => {
+      valeurSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+      data.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.valeur_libelle;
+        if (item.id.toString() === selectedValue) opt.selected = true;
+        valeurSelect.appendChild(opt);
+      });
+    })
+    .catch(err => console.error("Erreur AJAX valeurs métier:", err));
 }
 </script>
 {% endblock %}

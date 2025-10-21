@@ -24,15 +24,18 @@ def get_annee():
 
 
 # ============================================================
-# 🔹 CAF AUTOMATIQUE
+# 🔹 CAF AUTOMATIQUE (total dynamique selon mois sélectionné)
 # ============================================================
-@caf_bp.route('/automatique')
+@caf_bp.route("/automatique")
 def caf_automatique():
     annee = get_annee()
 
-    # 📅 Liste des mois
-    mois_labels = [calendar.month_name[i] for i in range(1, 13)]
-    mois_filtre = request.args.get('mois', 'all')
+    # 📅 Liste des mois (français)
+    mois_labels = [
+        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+    ]
+    mois_filtre = request.args.get("mois", "all")
 
     # 🔹 Premier lundi de l’année
     start = date(annee, 1, 1)
@@ -43,134 +46,83 @@ def caf_automatique():
     num_weeks = 53 if date(annee, 12, 31).isocalendar()[1] == 53 else 52
     week_labels = [f"S{i}" for i in range(1, num_weeks + 1)]
 
-    # 🔹 Mapping semaines ↔ mois
+    # 🔹 Mapping semaine ↔ mois
     semaine_to_mois = {}
     mois_to_semaines = {m: [] for m in mois_labels}
     for i, semaine in enumerate(week_labels, start=1):
         debut_semaine = start + timedelta(weeks=i - 1)
-        mois = debut_semaine.strftime("%B")
-        semaine_to_mois[semaine] = mois
-        mois_to_semaines[mois].append(semaine)
+        mois_nom = mois_labels[debut_semaine.month - 1]
+        semaine_to_mois[semaine] = mois_nom
+        mois_to_semaines[mois_nom].append(semaine)
 
-    if mois_filtre != 'all' and mois_filtre in mois_to_semaines:
+    # 🔹 Semaines à afficher
+    if mois_filtre != "all" and mois_filtre in mois_to_semaines:
         semaines_affichees = mois_to_semaines[mois_filtre]
     else:
         semaines_affichees = week_labels
 
     # ======================================================
-    # 🔹 Étape 1 : Récupération des collaborateurs
+    # 🔹 Récupération des collaborateurs
     # ======================================================
     collaborateurs = query_db("""
         SELECT 
             c.matricule,
             p.nom AS profil,
-            c.caf_disponible_build,
-            c.caf_disponible_run
+            c.caf_disponible_build
         FROM collaborateurs c
         JOIN profils p ON c.profil_id = p.id
     """)
 
     # ======================================================
-    # 🔹 Étape 2 : Récupération des répartitions secondaires
-    # ======================================================
-    repartitions = query_db("""
-        SELECT 
-            cr.collaborateur_id,
-            pp.nom AS profil_repartition,
-            cr.caf_disponible_build AS jh_build,
-            cr.caf_disponible_run AS jh_run
-        FROM collaborateur_repartition cr
-        JOIN profils pp ON pp.id = cr.profil_id
-    """)
-
-    # Regrouper les répartitions par collaborateur
-    rep_dict = {}
-    for r in repartitions:
-        rep_dict.setdefault(r["collaborateur_id"], []).append(r)
-
-    # ======================================================
-    # 🔹 Étape 3 : Agrégation BUILD et RUN par profil + nb pers
+    # 🔹 Agrégation BUILD par profil
     # ======================================================
     profils_data = {}
-
     for c in collaborateurs:
         profil = c["profil"]
-
         if profil not in profils_data:
-            profils_data[profil] = {"build": 0, "run": 0, "nb_build": set(), "nb_run": set()}
-
-        # Profil principal
-        if c["caf_disponible_build"]:
-            profils_data[profil]["build"] += c["caf_disponible_build"]
-            profils_data[profil]["nb_build"].add(c["matricule"])
-
-        if c["caf_disponible_run"]:
-            profils_data[profil]["run"] += c["caf_disponible_run"]
-            profils_data[profil]["nb_run"].add(c["matricule"])
-
-        # Répartitions secondaires
-        if c["matricule"] in rep_dict:
-            for rep in rep_dict[c["matricule"]]:
-                prof_sec = rep["profil_repartition"]
-
-                if prof_sec not in profils_data:
-                    profils_data[prof_sec] = {"build": 0, "run": 0, "nb_build": set(), "nb_run": set()}
-
-                if rep["jh_build"]:
-                    profils_data[prof_sec]["build"] += rep["jh_build"]
-                    profils_data[prof_sec]["nb_build"].add(c["matricule"])
-
-                if rep["jh_run"]:
-                    profils_data[prof_sec]["run"] += rep["jh_run"]
-                    profils_data[prof_sec]["nb_run"].add(c["matricule"])
+            profils_data[profil] = {"build": 0.0, "nb_collab": set()}
+        caf_build = float(c["caf_disponible_build"] or 0)
+        profils_data[profil]["build"] += caf_build
+        profils_data[profil]["nb_collab"].add(c["matricule"])
 
     # ======================================================
-    # 🔹 Étape 4 : Construction du tableau final
+    # 🔹 Construction du tableau
     # ======================================================
     data = []
+    total_general = 0.0
 
     for profil, val in profils_data.items():
         total_build = val["build"]
-        total_run = val["run"]
-        nb_build = len(val["nb_build"])
-        nb_run = len(val["nb_run"])
-
-        # Répartition hebdomadaire
+        nb_collab = len(val["nb_collab"])
         build_par_semaine = total_build / num_weeks if num_weeks > 0 else 0
-        run_par_semaine = total_run / num_weeks if num_weeks > 0 else 0
 
-        # BUILD
-        if total_build > 0:
-            row_build = {
-                "profil": f"{profil} (BUILD)",
-                "type": "BUILD",
-                "nb_collab": nb_build,
-                "total_annuel": round(total_build, 2)
-            }
-            for s in week_labels:
-                row_build[s] = round(build_par_semaine, 2)
-            data.append(row_build)
+        row = {
+            "profil": profil,
+            "nb_collab": nb_collab,
+            "total_annuel": 0  # sera calculé selon filtre
+        }
 
-        # RUN
-        if total_run > 0:
-            row_run = {
-                "profil": f"{profil} (RUN)",
-                "type": "RUN",
-                "nb_collab": nb_run,
-                "total_annuel": round(total_run, 2)
-            }
-            for s in week_labels:
-                row_run[s] = round(run_par_semaine, 2)
-            data.append(row_run)
+        # Ajout des semaines
+        for s in week_labels:
+            row[s] = round(build_par_semaine, 2)
+
+        # 🔹 Si filtre mensuel, on somme seulement les semaines du mois sélectionné
+        if mois_filtre != "all" and mois_filtre in mois_to_semaines:
+            total_mois = sum(row[s] for s in mois_to_semaines[mois_filtre])
+            row["total_annuel"] = round(total_mois, 2)
+        else:
+            row["total_annuel"] = round(total_build, 2)
+
+        data.append(row)
+        total_general += row["total_annuel"]
 
     # ======================================================
-    # 🔹 Étape 5 : TOTAL GÉNÉRAL
+    # 🔹 TOTAL GÉNÉRAL
     # ======================================================
     total_row = {
         "profil": "TOTAL GÉNÉRAL",
-        "type": "TOTAL",
         "nb_collab": "-",
-        "total_annuel": round(sum(d["total_annuel"] for d in data), 2)
+        "total_annuel": round(total_general, 2)
     }
     for s in week_labels:
         total_row[s] = round(sum(d[s] for d in data if s in d), 2)
@@ -189,8 +141,6 @@ def caf_automatique():
         mois_filtre=mois_filtre,
         annee=annee
     )
-
-
 
 # ============================================================
 # 🔹 CAF REQUISE

@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.db_utils import query_db, get_db
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+from flask import send_file
 import io
 programme_config_bp = Blueprint("programme_config", __name__, url_prefix="/programme_config")
 
@@ -10,15 +11,46 @@ programme_config_bp = Blueprint("programme_config", __name__, url_prefix="/progr
 # ============================================================== #
 @programme_config_bp.route("/")
 def liste_programmes():
+    # 🔍 Recherche
     q = (request.args.get("q", "") or "").strip()
-    sql = "SELECT id, nom FROM Programme"
+
+    # 📄 Pagination
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    # 🔹 Base query
+    sql_base = "FROM Programme WHERE 1=1"
     params = []
+
     if q:
-        sql += " WHERE nom LIKE ? COLLATE NOCASE"
-        params = [f"%{q}%"]
-    sql += " ORDER BY id DESC"
+        sql_base += " AND nom LIKE ? COLLATE NOCASE"
+        params.append(f"%{q}%")
+
+    # 🔢 Total pour pagination
+    total_row = query_db(f"SELECT COUNT(*) as count {sql_base}", params, one=True)
+    total = total_row["count"] if total_row else 0
+    total_pages = (total + per_page - 1) // per_page  # arrondi supérieur
+
+    # 📋 Données paginées
+    sql = f"""
+        SELECT id, nom, type
+        {sql_base}
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?
+    """
+    params += [per_page, offset]
     programmes = [dict(r) for r in query_db(sql, params)]
-    return render_template("Programme/programme_config_liste.html", programmes=programmes)
+
+    # 🧭 Rendu template
+    return render_template(
+        "Programme/programme_config_liste.html",
+        programmes=programmes,
+        q=q,
+        page=page,
+        total_pages=total_pages,
+        total=total
+    )
 
 
 # ============================================================== #
@@ -34,8 +66,8 @@ def ajouter_programme():
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO Programme (nom, idate, iuser)
-        VALUES (?, DATETIME('now'), ?)
+        INSERT INTO Programme (nom,type, idate, iuser)
+        VALUES (?,?, DATETIME('now'), ?)
     """, (nom, session.get('user', {}).get('username', 'admin')))
     conn.commit()
     flash("✅ Programme ajouté avec succès.", "success")
@@ -326,10 +358,7 @@ def tableau_charges(programme_id):
             "Programme/tableau_charges.html",
             phases=[], profils=[], tableau_final=[]
         )
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
-from flask import send_file
-import io
+
 
 @programme_config_bp.route("/exporter_tableau_charges/<int:programme_id>")
 def exporter_tableau_charges(programme_id):
