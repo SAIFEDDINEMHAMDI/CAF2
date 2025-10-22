@@ -23,10 +23,11 @@ def liste_recrutement():
     if q:
         where.append("""
             (r.matricule LIKE ? OR r.nom LIKE ? OR r.prenom LIKE ? 
-             OR EXISTS (SELECT 1 FROM profils p WHERE p.id = r.profil_id AND p.nom LIKE ?))
+             OR EXISTS (SELECT 1 FROM profils p WHERE p.id = r.profil_id AND p.nom LIKE ?)
+             OR EXISTS (SELECT 1 FROM sous_domaine_collaborateur s WHERE s.id = r.sous_domaine_id AND s.nom LIKE ?))
         """)
         like = f"%{q}%"
-        args.extend([like, like, like, like])
+        args.extend([like, like, like, like, like])
 
     where_sql = "WHERE " + " AND ".join(where) if where else ""
 
@@ -35,7 +36,9 @@ def liste_recrutement():
     total_pages = (total // per_page) + (1 if total % per_page else 0)
 
     ressources = query_db(f"""
-        SELECT r.id, r.matricule, r.nom, r.prenom, p.nom AS profil, r.profil_id,
+        SELECT r.id, r.matricule, r.nom, r.prenom,
+               p.nom AS profil, s.nom AS sous_domaine,
+               r.profil_id, r.sous_domaine_id,
                r.date_debut, r.periode_valeur, r.periode_unite,
                CASE
                    WHEN r.date_debut IS NULL THEN NULL
@@ -46,17 +49,20 @@ def liste_recrutement():
                END AS date_productivite
         FROM recrutement r
         LEFT JOIN profils p ON p.id = r.profil_id
+        LEFT JOIN sous_domaine_collaborateur s ON s.id = r.sous_domaine_id
         {where_sql}
         ORDER BY r.id DESC
         LIMIT ? OFFSET ?
     """, args + [per_page, offset])
 
     profils = query_db("SELECT id, nom FROM profils ORDER BY nom")
+    sous_domaines = query_db("SELECT id, nom FROM sous_domaine_collaborateur ORDER BY nom")
 
     return render_template(
         "recrutement_list.html",
         ressources=ressources,
         profils=profils,
+        sous_domaines=sous_domaines,
         page=page,
         total_pages=total_pages,
         q=q
@@ -73,6 +79,7 @@ def ajouter_recrutement():
         nom = request.form["nom"].strip()
         prenom = request.form["prenom"].strip()
         profil_id = request.form.get("profil_id") or None
+        sous_domaine_id = request.form.get("sous_domaine_id") or None
         date_debut = request.form.get("date_debut")
         periode_valeur = int(request.form.get("periode_valeur") or 0)
         periode_unite = request.form.get("periode_unite") or "jours"
@@ -118,9 +125,9 @@ def ajouter_recrutement():
 
         # ✅ Insertion
         execute_db("""
-            INSERT INTO recrutement (matricule, nom, prenom, profil_id, date_debut, periode_valeur, periode_unite)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, [matricule, nom, prenom, profil_id, date_debut, periode_valeur, periode_unite])
+            INSERT INTO recrutement (matricule, nom, prenom, profil_id, sous_domaine_id, date_debut, periode_valeur, periode_unite)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, [matricule, nom, prenom, profil_id, sous_domaine_id, date_debut, periode_valeur, periode_unite])
 
         session['_flashes'] = []
         flash("✅ Recrutement ajouté avec succès.", "success")
@@ -128,18 +135,18 @@ def ajouter_recrutement():
         # ✅ Si période = 0 → transfert direct dans collaborateurs
         if periode_valeur == 0:
             execute_db("""
-                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, affectation_id)
-                VALUES (?, ?, ?, ?, 1)
-            """, [matricule, nom, prenom, profil_id])
+                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, sous_domaine_id, affectation_id)
+                VALUES (?, ?, ?, ?, ?, 1)
+            """, [matricule, nom, prenom, profil_id, sous_domaine_id])
             flash("⚡ 0 jour : transféré immédiatement vers les collaborateurs.", "success")
             return redirect(url_for("collaborateurs.liste_collaborateurs"))
 
         # ✅ Si productif aujourd’hui → transfert immédiat
         if date_productivite and date_productivite == str(date.today()):
             execute_db("""
-                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, affectation_id)
-                VALUES (?, ?, ?, ?, 1)
-            """, [matricule, nom, prenom, profil_id])
+                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, sous_domaine_id, affectation_id)
+                VALUES (?, ?, ?, ?, ?, 1)
+            """, [matricule, nom, prenom, profil_id, sous_domaine_id])
             flash("🎯 Ressource devenue productive.", "success")
             return redirect(url_for("collaborateurs.liste_collaborateurs"))
 
@@ -160,6 +167,7 @@ def modifier_recrutement(id):
         nom = request.form["nom"].strip()
         prenom = request.form["prenom"].strip()
         profil_id = request.form.get("profil_id") or None
+        sous_domaine_id = request.form.get("sous_domaine_id") or None
         date_debut = request.form.get("date_debut")
         periode_valeur = int(request.form.get("periode_valeur") or 0)
         periode_unite = request.form.get("periode_unite") or "jours"
@@ -179,10 +187,10 @@ def modifier_recrutement(id):
 
         execute_db("""
             UPDATE recrutement
-            SET matricule = ?, nom = ?, prenom = ?, profil_id = ?, date_debut = ?, 
+            SET matricule = ?, nom = ?, prenom = ?, profil_id = ?, sous_domaine_id = ?, date_debut = ?, 
                 periode_valeur = ?, periode_unite = ?
             WHERE id = ?
-        """, [matricule, nom, prenom, profil_id, date_debut, periode_valeur, periode_unite, id])
+        """, [matricule, nom, prenom, profil_id, sous_domaine_id, date_debut, periode_valeur, periode_unite, id])
 
         session['_flashes'] = []
         flash("✅ Recrutement modifié avec succès.", "success")
@@ -190,9 +198,9 @@ def modifier_recrutement(id):
         # transfert si productif
         if periode_valeur == 0:
             execute_db("""
-                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, affectation_id)
-                VALUES (?, ?, ?, ?, 1)
-            """, [matricule, nom, prenom, profil_id])
+                INSERT OR IGNORE INTO collaborateurs (matricule, nom, prenom, profil_id, sous_domaine_id, affectation_id)
+                VALUES (?, ?, ?, ?, ?, 1)
+            """, [matricule, nom, prenom, profil_id, sous_domaine_id])
             flash("⚡ Ressource transférée vers collaborateurs.", "success")
             return redirect(url_for("collaborateurs.liste_collaborateurs"))
 
@@ -225,9 +233,9 @@ def supprimer_recrutement(id):
 @recrutement_bp.route("/modele-excel")
 def modele_excel():
     csv_content = (
-        "matricule,nom,prenom,profil,date_debut,periode_valeur,periode_unite\n"
-        "C00001,Doe,John,Data Engineer,2025-10-14,0,jours\n"
-        "C00002,Smith,Anna,QA,2025-10-20,3,mois\n"
+        "matricule,nom,prenom,profil,sous_domaine,date_debut,periode_valeur,periode_unite\n"
+        "C00001,Doe,John,Data Engineer,Digital Banking,2025-10-14,0,jours\n"
+        "C00002,Smith,Anna,QA,IT Sécurité,2025-10-20,3,mois\n"
     )
     resp = make_response(csv_content)
     resp.headers["Content-Type"] = "text/csv; charset=utf-8"

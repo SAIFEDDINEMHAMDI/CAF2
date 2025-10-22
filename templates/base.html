@@ -81,28 +81,34 @@
             </svg>
           </button>
 
-          <ul id="admin-submenu" class="ml-8 mt-1 overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
-            <li><a href="{{ url_for('valeurs_metier.liste_valeurs') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Coût de retard IT For IT</a></li>
-            <li><a href="{{ url_for('complexite.liste_complexite') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Complexité</a></li>
-            <li><a href="{{ url_for('statut_demande.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des Demandes</a></li>
-            <li><a href="{{ url_for('phase.liste_phases') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Phase d'un programme</a></li>
-            <li><a href="{{ url_for('programme_config.liste_programmes') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Programmes</a></li>
-            <li><a href="{{ url_for('domaines.liste_domaines') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Domaine d'activité</a></li>
-            <li><a href="{{ url_for('regles_complexite.liste_regles') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Règles de Complexité</a></li>
-            <li><a href="{{ url_for('affectation.liste_affectation') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Affectation</a></li>
-          </ul>
-        </li>
+            <ul id="admin-submenu" class="ml-8 mt-1 overflow-hidden max-h-0 transition-all duration-500 ease-in-out">
+              <li><a href="{{ url_for('valeurs_metier.liste_valeurs') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Coût de retard IT For IT</a></li>
+              <li><a href="{{ url_for('complexite.liste_complexite') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Complexité</a></li>
+              <li><a href="{{ url_for('statut_demande.liste_statuts') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Statut des Demandes</a></li>
+              <li><a href="{{ url_for('phase.liste_phases') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Phase d'un programme</a></li>
+              <li><a href="{{ url_for('programme_config.liste_programmes') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Programmes</a></li>
+              <li><a href="{{ url_for('domaines.liste_domaines') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Domaine d'activité projet</a></li>
+              <li><a href="{{ url_for('sous_domaine.liste_sous_domaines') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Domaine d'activité collaborateur</a></li>
+              <li><a href="{{ url_for('regles_complexite.liste_regles') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Règles de Complexité</a></li>
+              <li><a href="{{ url_for('affectation.liste_affectation') }}" class="flex items-center space-x-3 p-2 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">Affectation</a></li>
+            </ul>
 
-        <script>
-          function toggleAdminMenu() {
-            const submenu = document.getElementById("admin-submenu");
-            const arrow = document.getElementById("admin-arrow");
-            submenu.classList.toggle("max-h-0");
-            submenu.classList.toggle("max-h-96");
-            arrow.classList.toggle("rotate-180");
-          }
-        </script>
+            <script>
+            function toggleAdminMenu() {
+              const submenu = document.getElementById("admin-submenu");
+              const arrow = document.getElementById("admin-arrow");
 
+              if (submenu.classList.contains("max-h-0")) {
+                submenu.classList.remove("max-h-0");
+                submenu.classList.add("max-h-[800px]"); // ✅ hauteur suffisante pour tout afficher
+                arrow.classList.add("rotate-180");
+              } else {
+                submenu.classList.add("max-h-0");
+                submenu.classList.remove("max-h-[800px]");
+                arrow.classList.remove("rotate-180");
+              }
+            }
+            </script>
         <!-- 🔸 Autres menus -->
  <li><a href="{{ url_for('caf.caf_automatique') }}" class="flex items-center space-x-3 p-3 rounded hover:bg-biat-secondary/20 hover:text-biat-secondary transition">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -226,7 +232,7 @@
         </svg>
       </button>
 
-      {% set user = ui_user or session.user %}
+      {% set user = ui_user or session.get('user') %}
       <div class="flex items-center space-x-6">
         {% if user %}
           <span class="text-sm text-gray-600 flex items-center space-x-2">
@@ -237,7 +243,11 @@
             {% set display_name = ((user.prenom or '') ~ ' ' ~ (user.nom or '')).strip() %}
             <span>{{ display_name or user.username or user.email or 'Utilisateur' }}</span>
           </span>
-          <a href="{{ url_for('auth.logout') }}" class="text-sm text-red-600 hover:text-red-800 font-medium">Déconnexion</a>
+            <button onclick="openLogoutConfirm()" class="text-sm text-red-600 hover:text-red-800 font-medium">
+              Déconnexion
+            </button>
+
+
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Connexion</a>
         {% endif %}
@@ -294,45 +304,173 @@
     };
   </script>
 
-  <!-- ===========================
-       🔒 AUTO-LOGOUT + TOKEN CHECK
-  ============================ -->
-  <script>
-    let inactivityTimeout;
-    const MAX_INACTIVITY_MINUTES = 15;
-    const CHECK_INTERVAL = 30000;
+ <!-- ===========================
+     🔒 TEST : SESSION EXPIRE APRÈS 15 SECONDES
+=========================== -->
+<script>
+  let inactivityTimeout;
+  const MAX_INACTIVITY_SECONDS = 15 * 60;    // 🕒 session expire après 15 minutes
+  const CHECK_INTERVAL = 10000;        // vérification toutes les 10s
 
-    function showSessionExpiredToast() {
-      const toast = document.createElement("div");
-      toast.className = "px-6 py-4 rounded shadow-lg bg-yellow-50 text-yellow-800 border-l-4 border-yellow-500 fixed top-4 right-4 z-50 transition-all duration-300";
-      toast.textContent = "⏰ Votre session a expiré. Redirection vers la connexion...";
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 5000);
+  // ✅ Affiche la popup BIAT stylée
+  function showSessionExpiredPopup() {
+    if (document.getElementById('session-expired-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'session-expired-overlay';
+    overlay.className = 'fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn';
+
+    const modal = document.createElement('div');
+    modal.className = 'bg-white p-6 rounded-xl shadow-lg text-center max-w-sm w-full transform scale-95 animate-zoomIn';
+    modal.innerHTML = `
+      <div class="flex flex-col items-center space-y-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-gray-800 text-sm font-medium">Votre session a expiré, veuillez vous reconnecter.</p>
+        <button id="session-ok" class="mt-4 bg-biat-primary text-white px-4 py-2 rounded hover:bg-biat-primary/90 transition">
+          OK
+        </button>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById('session-ok').addEventListener('click', () => {
+      window.location.href = "{{ url_for('auth.login') }}";
+    });
+  }
+
+  // ✅ Déconnexion après inactivité
+  function redirectToLoginPopup() {
+    showSessionExpiredPopup();
+  }
+
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimeout);
+    inactivityTimeout = setTimeout(redirectToLoginPopup, MAX_INACTIVITY_SECONDS * 1000);
+  }
+
+  ["mousemove", "keydown", "click", "scroll"].forEach(event => document.addEventListener(event, resetInactivityTimer));
+  resetInactivityTimer();
+
+  // ✅ Vérifie la validité du token
+  async function checkTokenValidity() {
+    try {
+      const response = await fetch("{{ url_for('auth.token_info') }}");
+      if (!response.ok) showSessionExpiredPopup();
+    } catch {
+      showSessionExpiredPopup();
     }
+  }
+  setInterval(checkTokenValidity, CHECK_INTERVAL);
 
-    function redirectToLogin() {
-      showSessionExpiredToast();
-      setTimeout(() => window.location.href = "{{ url_for('auth.logout') }}", 2000);
-    }
-
-    function resetInactivityTimer() {
-      clearTimeout(inactivityTimeout);
-      inactivityTimeout = setTimeout(redirectToLogin, MAX_INACTIVITY_MINUTES * 60000);
-    }
-
-    ["mousemove", "keydown", "click", "scroll"].forEach(event => document.addEventListener(event, resetInactivityTimer));
-    resetInactivityTimer();
-
-    async function checkTokenValidity() {
+  // ✅ Intercepte les 401 AJAX
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    const response = await originalFetch(...args);
+    if (response.status === 401) {
       try {
-        const response = await fetch("{{ url_for('auth.token_info') }}");
-        if (!response.ok) redirectToLogin();
+        const data = await response.json();
+        if (data.session_expired) showSessionExpiredPopup();
       } catch {
-        redirectToLogin();
+        showSessionExpiredPopup();
       }
     }
-    setInterval(checkTokenValidity, CHECK_INTERVAL);
-  </script>
+    return response;
+  };
+
+  // 🔹 Petites animations Tailwind custom
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+    .animate-zoomIn { animation: zoomIn 0.25s ease-out; }
+  `;
+  document.head.appendChild(style);
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  window.openLogoutConfirm = function () {
+    // Éviter d’ouvrir plusieurs fois
+    if (document.getElementById('logout-overlay')) return;
+
+    // 🔹 Overlay sombre
+    const overlay = document.createElement('div');
+    overlay.id = 'logout-overlay';
+    overlay.className = 'fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50 animate-fadeIn';
+
+    // 🔹 Contenu principal
+    const modal = document.createElement('div');
+    modal.className = 'bg-white p-6 rounded-xl shadow-xl text-center max-w-sm w-full transform scale-95 animate-zoomIn border-t-4 border-biat-primary';
+    modal.innerHTML = `
+      <div class="flex flex-col items-center space-y-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-biat-primary opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5"/>
+        </svg>
+        <h2 class="text-lg font-semibold text-gray-800">Déconnexion</h2>
+        <p class="text-gray-600 text-sm">Êtes-vous sûr de vouloir vous déconnecter&nbsp;?</p>
+        <div class="flex justify-center space-x-3 mt-4">
+          <button id="logout-yes"
+                  class="bg-biat-primary text-white px-4 py-2 rounded-lg hover:bg-biat-secondary transition">
+            Oui
+          </button>
+          <button id="logout-no"
+                  class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+            Annuler
+          </button>
+        </div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // ✅ Actions
+    document.getElementById('logout-yes').addEventListener('click', () => {
+      window.location.href = "{{ url_for('auth.logout') }}";
+    });
+    document.getElementById('logout-no').addEventListener('click', () => {
+      overlay.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => overlay.remove(), 200);
+    });
+  };
+
+  // ✅ Animations légères si non déjà présentes
+  if (!document.getElementById("logout-style")) {
+    const logoutStyle = document.createElement('style');
+    logoutStyle.id = "logout-style";
+    logoutStyle.textContent = `
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+      .animate-zoomIn { animation: zoomIn 0.25s ease-out; }
+    `;
+    document.head.appendChild(logoutStyle);
+  }
+
+});
+</script>
+
+  <script>
+let lastActivity = Date.now();
+const timeout = 15 * 60 * 1000; // ⚠️ 15 secondes pour le test
+const interval = 30000; // ping toutes les 2 secondes
+
+["mousemove", "click", "keydown", "scroll"].forEach(evt =>
+  document.addEventListener(evt, () => (lastActivity = Date.now()))
+);
+
+setInterval(() => {
+  if (Date.now() - lastActivity < timeout) {
+    fetch("/ping", { method: "GET", credentials: "same-origin" });
+  }
+}, interval);
+</script>
+
 
   {% block scripts %}{% endblock %}
 </body>

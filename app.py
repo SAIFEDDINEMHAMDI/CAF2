@@ -1,10 +1,11 @@
 # ==========================================
-# app.py — Application principale Flask BIAT (JWT) — version finale fusionnée
+# app.py — Application principale Flask BIAT (JWT)
+# Version avec déconnexion après inactivité réelle (15 min)
 # ==========================================
 from dotenv import load_dotenv
 import os
-from flask import Flask, request, redirect, url_for, session, flash, render_template
-from datetime import datetime
+from flask import Flask, request, redirect, url_for, session, flash, render_template, jsonify
+from datetime import datetime, timezone, timedelta
 import uuid
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
@@ -16,7 +17,7 @@ from services.wsjf_calculator import calculate_wsjf
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 
 # 🔒 Décorateurs utilitaires
-from utils.decorators import readonly_if_user  # protège certaines actions (lecture seule)
+from utils.decorators import readonly_if_user
 
 # ----------------- IMPORT DES BLUEPRINTS -----------------
 from routes.auth_routes import auth_bp
@@ -38,6 +39,7 @@ from routes.regles_complexite_routes import regles_complexite_bp
 from routes.affectation_routes import affectation_bp
 from routes.accompagnement_routes import accompagnement_bp
 from routes.recrutement_routes import recrutement_bp
+from routes.sous_domaine_collaborateur import sous_domaine_bp  # ✅ Nouveau blueprint
 
 # ✅ Blueprints collaborateur
 from routes.valeurs_metier_routes import valeurs_bp
@@ -71,10 +73,9 @@ register_jwt_protection(app)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 🔁 Sessions
-app.config["SESSION_PERMANENT"] = False
-app.config["PERMANENT_SESSION_LIFETIME"] = 0
-app.config["SESSION_COOKIE_DURATION"] = False
+# 🔁 Sessions — expiration après 15 min d’inactivité réelle
+app.config["SESSION_PERMANENT"] = True
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=15)
 
 # ==========================================
 # 👤 Injecte automatiquement l’utilisateur dans les templates
@@ -103,6 +104,53 @@ def inject_ui_user():
         return {"ui_user": user}
     return {"ui_user": None}
 
+
+# ==========================================
+# ⚠️ MIDDLEWARE — Gestion automatique des sessions expirées
+# ==========================================
+@app.before_request
+def handle_expired_session():
+    """
+    Vérifie si le token JWT est expiré avant chaque requête.
+    Si oui → redirige vers /auth/expired
+    """
+    exempt_routes = [
+        "auth.login", "auth.logout", "auth.token_info",
+        "auth.expired", "ping", "static"
+    ]
+
+    if request.endpoint in exempt_routes or request.endpoint is None:
+        return
+
+    try:
+        verify_jwt_in_request(optional=True)
+        claims = get_jwt()
+        if claims:
+            exp = claims.get("exp")
+            if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(timezone.utc):
+                session.clear()
+                return redirect(url_for("auth.expired"))
+
+        if not get_jwt_identity() and not session.get("user"):
+            session.clear()
+            return redirect(url_for("auth.expired"))
+    except Exception:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({"session_expired": True}), 401
+        session.clear()
+        return redirect(url_for("auth.expired"))
+
+
+# ==========================================
+# 🧭 ROUTE KEEPALIVE — maintient la session active si activité
+# ==========================================
+@app.route("/ping")
+def ping():
+    """Route appelée automatiquement par le front pour rafraîchir la session."""
+    session.modified = True
+    return "", 204
+
+
 # ==========================================
 # 🔹 BLUEPRINTS
 # ==========================================
@@ -111,9 +159,11 @@ for bp in [
     import_excel_bp, complexite_bp, projet_bp, categorie_bp, statut_bp,
     statut_demande_bp, phase_bp, domaines_bp, programme_config_bp,
     regles_complexite_bp, affectation_bp, accompagnement_bp, recrutement_bp,
+    sous_domaine_bp,  # ✅ Ajout du blueprint ici
     valeurs_bp, demande_it_bp, import_excel_it_bp,
 ]:
     app.register_blueprint(bp)
+
 
 # ==========================================
 # 🔸 Gestion des rôles
@@ -125,14 +175,15 @@ def has_role(required_roles):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            user = session.get('user')
-            role = (user or {}).get('role')
+            user = session.get("user")
+            role = (user or {}).get("role")
             if role not in roles:
                 flash("❌ Accès refusé (droits insuffisants).", "error")
-                return redirect(url_for('projet.liste_demandes'))
+                return redirect(url_for("projet.liste_demandes"))
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
 
 # ==========================================
 # 🔹 ROUTES GÉNÉRALES
@@ -147,6 +198,7 @@ def index():
         pass
     return redirect(url_for("auth.login"))
 
+
 @app.route("/home")
 def home():
     """Page d'accueil redirigeant selon connexion"""
@@ -158,13 +210,15 @@ def home():
         pass
     return redirect(url_for("auth.login"))
 
+
 @app.route("/base")
 @login_required
 def base():
     return render_template("base.html", now=datetime.now)
 
+
 # ==========================================
-# 🔹 INTERFACES DE FORMULAIRES
+# 🔹 INTERFACES DE FORMULAIRES (démo WSJF)
 # ==========================================
 @app.route("/interface1", methods=["GET", "POST"])
 @login_required
@@ -183,124 +237,9 @@ def interface1():
         return redirect(url_for("interface2"))
     return render_template("interface1.html", categorie=categories, now=datetime.now())
 
-@app.route("/interface2", methods=["GET", "POST"])
-@login_required
-def interface2():
-    if "form1" not in session:
-        return redirect(url_for("interface1"))
-    if request.method == "POST":
-        session["form2"] = request.form.to_dict()
-        return redirect(url_for("interface3"))
-    return render_template("interface2.html")
-
-@app.route("/interface3", methods=["GET", "POST"])
-@login_required
-def interface3():
-    if "form1" not in session or "form2" not in session:
-        return redirect(url_for("interface1"))
-
-    if request.method == "POST":
-        project_id = str(uuid.uuid4())
-        form1 = session.pop("form1", {})
-        form2 = session.pop("form2", {})
-        form3 = request.form.to_dict()
-        all_data = {**form1, **form2, **form3, "project_id": project_id}
-
-        resultats = calculate_wsjf(all_data)
-        score_wsjf = resultats["score_wsjf"]
-        complexite = resultats["complexite"]
-        jh_estime = resultats["jh_estime"]
-
-        date_mep = all_data.get("date_mep")
-        release_info = query_db("""
-            SELECT id
-            FROM releases
-            WHERE ? BETWEEN debut AND fin
-            ORDER BY debut DESC LIMIT 1
-        """, [date_mep], one=True)
-        release_id = release_info["id"] if release_info else None
-
-        execute_db("""
-            INSERT INTO projets (id, titre, description, date_mep, score_wsjf,
-                                 release_id, categorie_id, statut, duree_estimee_jh, complexite)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            project_id, all_data["titre"], all_data["description"], all_data["date_mep"],
-            score_wsjf, release_id, all_data.get("categorie_id"),
-            all_data.get("statut", "En attente"), jh_estime, complexite
-        ))
-
-        session["project_id"] = project_id
-        return redirect(url_for("resultat"))
-
-    return render_template("interface3.html")
-
-@app.route("/resultat")
-@login_required
-def resultat():
-    project_id = session.get("project_id")
-    if not project_id:
-        return redirect(url_for("interface1"))
-    projet = query_db("SELECT * FROM projets WHERE id = ?", [project_id], one=True)
-    if not projet:
-        return "Projet non trouvé", 404
-    return render_template("resultat.html", result=projet)
 
 # ==========================================
-# 🔹 ADMINISTRATION / WSJF
-# ==========================================
-@app.route('/priorites')
-@login_required
-def priorites():
-    filtre_retenu = request.args.get('retenu')
-    query = """
-        SELECT p.*, c.nom AS categorie 
-        FROM projets p
-        LEFT JOIN categorie c ON p.categorie_id = c.id
-    """
-    if filtre_retenu == '1':
-        query += " WHERE p.retenu = 1 "
-    query += " ORDER BY p.score_wsjf DESC LIMIT 50"
-    projets = query_db(query)
-    return render_template('priorites.html', projets=projets, filtre_retenu=filtre_retenu)
-
-@app.route('/toggle_retenu/<string:projet_id>', methods=['POST'])
-@login_required
-@readonly_if_user
-def toggle_retenu(projet_id):
-    projet = query_db("SELECT retenu FROM projets WHERE id = ?", [projet_id], one=True)
-    if projet is None:
-        flash("❌ Projet introuvable", "danger")
-    else:
-        nouveau_statut = 0 if projet['retenu'] else 1
-        execute_db("UPDATE projets SET retenu = ? WHERE id = ?", [nouveau_statut, projet_id])
-        flash("✅ Statut 'retenu' mis à jour", "success")
-    return redirect(url_for('priorites'))
-
-@app.route('/create_admin', methods=['GET', 'POST'])
-@login_required
-@has_role(['superadmin', 'admin'])
-def create_admin():
-    if request.method == 'POST':
-        username = request.form['username'].strip()
-        password = request.form['password']
-        role = request.form.get('role', 'admin')
-        hashed_password = generate_password_hash(password)
-        user_id = str(uuid.uuid4())
-
-        try:
-            execute_db("""
-                INSERT INTO users (id, username, password, role)
-                VALUES (?, ?, ?, ?)
-            """, [user_id, username, hashed_password, role])
-            flash("✅ Utilisateur créé avec succès.", "success")
-            return redirect(url_for('priorites'))
-        except Exception as e:
-            flash(f"❌ Erreur lors de la création : {e}", "danger")
-    return render_template('create_admin.html')
-
-# ==========================================
-# 🔹 LANCEMENT APP
+# 🚀 LANCEMENT APP
 # ==========================================
 if __name__ == "__main__":
     host = "127.0.0.1"

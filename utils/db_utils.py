@@ -1,4 +1,3 @@
-# utils/db_utils.py
 import os
 import sqlite3
 import time
@@ -15,31 +14,25 @@ DB_PATH = database_path
 # 🔌 Connexion SQLite robuste (avec WAL, timeout, foreign keys)
 # --------------------------------------------------------------------
 def get_connection():
-    """
-    Retourne une connexion SQLite robuste.
-    Configure WAL + timeouts pour éviter les verrous.
-    """
+    """Retourne une connexion SQLite robuste."""
     conn = sqlite3.connect(
         DB_PATH,
-        timeout=60,               # ⏱️ Patiente jusqu'à 60s avant "database is locked"
+        timeout=60,
         check_same_thread=False
     )
     conn.row_factory = sqlite3.Row
 
-    # ✅ PRAGMA essentiels à chaque connexion
-    conn.execute("PRAGMA journal_mode=WAL;")      # Autorise les écritures concurrentes
-    conn.execute("PRAGMA synchronous=NORMAL;")    # Bon compromis vitesse/sécurité
-    conn.execute("PRAGMA foreign_keys = ON;")     # Active les clés étrangères
-    conn.execute("PRAGMA busy_timeout = 60000;")  # Attend 60s avant d'abandonner une écriture
-
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    conn.execute("PRAGMA foreign_keys = ON;")
+    conn.execute("PRAGMA busy_timeout = 60000;")
     return conn
 
 
 # --------------------------------------------------------------------
-# 🧩 Alias compatible avec les routes Flask (ex: import_excel_routes)
+# 🧩 Alias pour compatibilité Flask
 # --------------------------------------------------------------------
 def get_db():
-    """Alias pour compatibilité avec les routes Flask (utilise get_connection)."""
     return get_connection()
 
 
@@ -47,7 +40,6 @@ def get_db():
 # 🔍 SELECT avec retry automatique
 # --------------------------------------------------------------------
 def query_db(query, args=(), one=False, retries=3, delay=1):
-    """Exécute une requête SELECT avec retry doux si la base est momentanément verrouillée."""
     for attempt in range(retries):
         try:
             conn = get_connection()
@@ -67,7 +59,6 @@ def query_db(query, args=(), one=False, retries=3, delay=1):
 # ✏️ INSERT / UPDATE / DELETE avec retry automatique
 # --------------------------------------------------------------------
 def execute_db(query, args=(), many=False, retries=3, delay=1):
-    """Exécute une requête d'écriture avec gestion douce des verrous."""
     for attempt in range(retries):
         try:
             conn = get_connection()
@@ -89,15 +80,15 @@ def execute_db(query, args=(), many=False, retries=3, delay=1):
 
 
 # --------------------------------------------------------------------
-# 🏗️ Initialisation de la base (création des tables principales)
+# 🏗️ Initialisation de la base
 # --------------------------------------------------------------------
 def init_db():
-    """Initialise la base et configure WAL une seule fois."""
+    """Initialise la base et configure WAL."""
     try:
         conn = sqlite3.connect(DB_PATH, timeout=30, check_same_thread=False)
         conn.row_factory = sqlite3.Row
-
         cur = conn.cursor()
+
         cur.execute("PRAGMA journal_mode=WAL;")
         cur.execute("PRAGMA synchronous=NORMAL;")
         cur.execute("PRAGMA foreign_keys = ON;")
@@ -247,14 +238,79 @@ def init_db():
             uuser TEXT,
             udate DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+
+        -- Table sous-domaine collaborateur
+        CREATE TABLE IF NOT EXISTS sous_domaine_collaborateur (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nom NVARCHAR(100) NOT NULL,
+            description NVARCHAR(300),
+            coefficient REAL DEFAULT 1,
+            idate DATETIME DEFAULT CURRENT_TIMESTAMP,
+            udate DATETIME,
+            iuser INTEGER,
+            uuser INTEGER
+        );
+
+        -- Table recrutement
+        CREATE TABLE IF NOT EXISTS recrutement (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            matricule TEXT NOT NULL,
+            nom TEXT NOT NULL,
+            prenom TEXT NOT NULL,
+            profil_id INTEGER,
+            sous_domaine_id INTEGER,
+            date_debut DATE,
+            periode_valeur INTEGER DEFAULT 0,
+            periode_unite TEXT DEFAULT 'mois',
+            date_productivite DATE,
+            FOREIGN KEY (profil_id) REFERENCES profils(id),
+            FOREIGN KEY (sous_domaine_id) REFERENCES sous_domaine_collaborateur(id)
+        );
+
+        -- Table accompagnement externe
+        CREATE TABLE IF NOT EXISTS accompagnement_externe (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            profil_id INTEGER NOT NULL,
+            nb_etp INTEGER NOT NULL DEFAULT 0,
+            date_debut DATE NOT NULL,
+            date_fin DATE NOT NULL,
+            iuser TEXT,
+            idate DATETIME DEFAULT CURRENT_TIMESTAMP,
+            uuser TEXT,
+            udate DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (profil_id) REFERENCES profils(id)
+        );
         """
 
         cur.executescript(SCHEMA)
 
-        # Vérifie et ajoute la colonne 'retenu' si absente
+        # ================================================================
+        # 🔹 Ajout automatique des colonnes manquantes (sécurisé)
+        # ================================================================
         cur.execute("SELECT COUNT(*) FROM pragma_table_info('projets') WHERE name='retenu';")
         if cur.fetchone()[0] == 0:
             cur.execute("ALTER TABLE projets ADD COLUMN retenu INTEGER DEFAULT 0;")
+
+        cur.execute("SELECT COUNT(*) FROM pragma_table_info('recrutement') WHERE name='sous_domaine_id';")
+        if cur.fetchone()[0] == 0:
+            cur.execute("ALTER TABLE recrutement ADD COLUMN sous_domaine_id INTEGER REFERENCES sous_domaine_collaborateur(id);")
+
+        # --- 🔸 Accompagnement externe : colonnes manquantes ---
+        cur.execute("SELECT COUNT(*) FROM pragma_table_info('accompagnement_externe') WHERE name='sous_domaine_id';")
+        if cur.fetchone()[0] == 0:
+            cur.execute("ALTER TABLE accompagnement_externe ADD COLUMN sous_domaine_id INTEGER REFERENCES sous_domaine_collaborateur(id);")
+
+        cur.execute("SELECT COUNT(*) FROM pragma_table_info('accompagnement_externe') WHERE name='periode_valeur';")
+        if cur.fetchone()[0] == 0:
+            cur.execute("ALTER TABLE accompagnement_externe ADD COLUMN periode_valeur INTEGER DEFAULT 0;")
+
+        cur.execute("SELECT COUNT(*) FROM pragma_table_info('accompagnement_externe') WHERE name='periode_unite';")
+        if cur.fetchone()[0] == 0:
+            cur.execute("ALTER TABLE accompagnement_externe ADD COLUMN periode_unite TEXT DEFAULT 'mois';")
+
+        cur.execute("SELECT COUNT(*) FROM pragma_table_info('accompagnement_externe') WHERE name='date_productivite';")
+        if cur.fetchone()[0] == 0:
+            cur.execute("ALTER TABLE accompagnement_externe ADD COLUMN date_productivite DATE;")
 
         conn.commit()
         cur.close()

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Domaines d'activité{% endblock %}
+{% block title %}Sous-domaines Collaborateur{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-6 py-8">
-  <h1 class="text-3xl font-bold mb-8 text-blue-600">Domaines d'activité</h1>
+  <h1 class="text-3xl font-bold mb-8 text-blue-600">Sous-domaines Collaborateur</h1>
 
-  <!-- Barre de recherche + bouton Ajouter -->
+  <!-- 🔍 Recherche + bouton ajout -->
   <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <form method="get" action="{{ url_for('domaines.liste_domaines') }}" class="flex items-center gap-2">
+    <form method="get" action="{{ url_for('sous_domaine.liste_sous_domaines') }}" class="flex items-center gap-2">
       <input type="text" name="q" value="{{ request.args.get('q','') }}"
-             placeholder="🔍 Rechercher un domaine..."
+             placeholder="🔍 Rechercher un sous-domaine..."
              class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-80 focus:ring-blue-400 focus:border-blue-400">
       <button type="submit"
               class="bg-white border border-gray-300 px-3 py-2 rounded text-blue-600 hover:text-blue-800 transition">
@@ -17,14 +17,13 @@
       </button>
     </form>
 
-    <!-- Bouton Ajouter toujours visible -->
     <button onclick="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition">
-      ➕ Ajouter un domaine
+      ➕ Ajouter un sous-domaine
     </button>
   </div>
 
-  <!-- Tableau -->
+  <!-- 🔹 Tableau -->
   <div class="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
     <table class="min-w-full bg-white divide-y divide-gray-200">
       <thead class="bg-gray-100">
@@ -37,24 +36,24 @@
       </thead>
 
       <tbody class="divide-y divide-gray-200">
-        {% for d in domaines %}
+        {% for s in sous_domaines %}
         <tr class="hover:bg-gray-50 transition">
-          <td class="px-6 py-4 text-sm text-gray-800">{{ d.nom }}</td>
-          <td class="px-6 py-4 text-sm text-gray-600">{{ d.description }}</td>
-          <td class="px-6 py-4 text-center text-sm text-gray-800">{{ d.coefficient }}</td>
+          <td class="px-6 py-4 text-sm text-gray-800">{{ s.nom }}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">{{ s.description }}</td>
+          <td class="px-6 py-4 text-center text-sm text-gray-800">{{ s.coefficient }}</td>
           <td class="px-6 py-4 text-center">
             <div class="flex items-center justify-center gap-3">
               <!-- Modifier -->
               <button type="button"
-                      onclick='openEditModal({{ d.id|tojson }}, {{ d.nom|tojson }}, {{ d.description|tojson }}, {{ d.coefficient|tojson }})'
+                      onclick='openEditModal({{ s.id|tojson }}, {{ s.nom|tojson }}, {{ s.description|tojson }}, {{ s.coefficient|tojson }})'
                       class="inline-flex items-center justify-center p-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
                       title="Modifier">
                 ✏️
               </button>
 
               <!-- Supprimer -->
-              <form action="{{ url_for('domaines.supprimer_domaine', id=d.id) }}" method="post"
-                    onsubmit="return confirm('Supprimer {{ d.nom }} ?')">
+              <form action="{{ url_for('sous_domaine.supprimer_sous_domaine', id=s.id) }}" method="post"
+                    onsubmit="return confirm('Supprimer {{ s.nom }} ?')">
                 <button type="submit"
                         class="inline-flex items-center justify-center p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition"
                         title="Supprimer">
@@ -66,7 +65,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="4" class="text-center px-6 py-6 text-gray-500">Aucun domaine trouvé</td>
+          <td colspan="4" class="text-center px-6 py-6 text-gray-500">Aucun sous-domaine trouvé</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -74,13 +73,13 @@
   </div>
 </div>
 
-<!-- ===== MODAL AJOUT ===== -->
+<!-- 🔹 MODAL AJOUT -->
 <div id="addModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="addModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
-    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un Domaine</h2>
-    <form method="POST" action="{{ url_for('domaines.ajouter_domaine') }}">
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Ajouter un Sous-domaine</h2>
+    <form method="POST" action="{{ url_for('sous_domaine.ajouter_sous_domaine') }}">
       <div class="mb-3">
-        <label class="block text-sm font-medium">Nom du domaine</label>
+        <label class="block text-sm font-medium">Nom du sous-domaine</label>
         <input type="text" name="nom" required placeholder="Saisir le nom..."
                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-400 focus:border-blue-400">
       </div>
@@ -102,10 +101,10 @@
   </div>
 </div>
 
-<!-- ===== MODAL EDIT ===== -->
+<!-- 🔹 MODAL EDIT -->
 <div id="editModal" class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
   <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 transform scale-95 opacity-0 transition-all duration-300 ease-out">
-    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier le Domaine</h2>
+    <h2 class="text-xl font-bold mb-4 text-blue-600">Modifier le Sous-domaine</h2>
     <form id="editForm" method="POST">
       <div class="mb-3">
         <label class="block text-sm font-medium">Nom</label>
@@ -120,7 +119,7 @@
       <div class="mb-3">
         <label class="block text-sm font-medium">Coefficient</label>
         <input type="number" id="editCoefficient" name="coefficient" step="0.1"
-               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-400 focus:border-blue-400">
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-400 focus-border-blue-400">
       </div>
       <div class="flex justify-end gap-2 mt-4">
         <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-200">Annuler</button>
@@ -130,7 +129,6 @@
   </div>
 </div>
 
-<!-- ===== SCRIPTS ===== -->
 <script>
 function openAddModal() {
   const modal = document.getElementById("addModal");
@@ -152,7 +150,7 @@ function openEditModal(id, nom, description, coefficient) {
   document.getElementById("editNom").value = nom || '';
   document.getElementById("editDescription").value = description || '';
   document.getElementById("editCoefficient").value = coefficient || '';
-  document.getElementById("editForm").action = "/domaines/modifier/" + id;
+  document.getElementById("editForm").action = "/sous_domaine/modifier/" + id;
   const modal = document.getElementById("editModal");
   const content = document.getElementById("editModalContent");
   modal.classList.remove("hidden");
